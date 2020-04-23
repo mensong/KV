@@ -82,11 +82,24 @@ typedef void(*FN_DelBuff)(const char* k);
 
 class KV
 {
+private:
+	static KV* s_ins;
+
 public:
 	static KV& Ins()
 	{
-		static KV s_ins;
-		return s_ins;
+		if (!s_ins)
+			s_ins = new KV;
+		return *s_ins;
+	}
+
+	static void Release()
+	{
+		if (s_ins)
+		{
+			delete s_ins;
+			s_ins = NULL;
+		}
 	}
 		
 	KV()
@@ -115,6 +128,10 @@ public:
 			this->GetBuff = GetBuff;
 			this->HasBuff = HasBuff;
 			this->DelBuff = DelBuff;
+		}
+		else
+		{
+			::MessageBoxA(NULL, "找不到KV.dll模块", "找不到模块", MB_OK | MB_ICONERROR);
 		}
 	}
 	~KV()
@@ -149,6 +166,7 @@ public:
 
 	HMODULE hDll;
 };
+__declspec(selectany) KV* KV::s_ins = NULL;
 
 #ifdef UNICODE
 #define KVSetStr KV::Ins().SetStrW
