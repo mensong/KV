@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="DES_CBC_5">
+      <UniqueIdentifier>{440ad983-e903-4e41-bea8-9be1a57b422a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -27,6 +30,24 @@
     <ClInclude Include="KV.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\DES_CBC_5\base64.h">
+      <Filter>DES_CBC_5</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DES_CBC_5\cipher_des.h">
+      <Filter>DES_CBC_5</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DES_CBC_5\cipher_padding.h">
+      <Filter>DES_CBC_5</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DES_CBC_5\cipher_params.h">
+      <Filter>DES_CBC_5</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DES_CBC_5\DesHelper.h">
+      <Filter>DES_CBC_5</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DES_CBC_5\utils.h">
+      <Filter>DES_CBC_5</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -37,6 +58,21 @@
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DES_CBC_5\base64.cpp">
+      <Filter>DES_CBC_5</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DES_CBC_5\cipher_des.cpp">
+      <Filter>DES_CBC_5</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DES_CBC_5\cipher_padding.cpp">
+      <Filter>DES_CBC_5</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DES_CBC_5\DesHelper.cpp">
+      <Filter>DES_CBC_5</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DES_CBC_5\utils.cpp">
+      <Filter>DES_CBC_5</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

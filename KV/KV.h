@@ -6,7 +6,6 @@
 #define KV_API extern "C" __declspec(dllimport)
 #endif
 
-
 KV_API bool SetStrA(const char* k, const char* v);
 KV_API bool SetStrW(const wchar_t* k, const wchar_t* v);
 KV_API const char* GetStrA(const char* k, const char* def = "");
@@ -31,6 +30,9 @@ KV_API const char* GetBuff(const char* k, int& outLen);
 KV_API bool HasBuff(const char* k);
 KV_API void DelBuff(const char* k);
 
+KV_API const char* GetDecrypt(const char* k, const char* def = "");
+KV_API const char* EncryptData(const char* k, const char* v);
+
 
 #ifndef KV_EXPORTS
 typedef bool(*FN_SetStrA)(const char* k, const char* v); 
@@ -53,6 +55,8 @@ typedef bool(*FN_SetBuff)(const char* k, const char* buff, int buffLen);
 typedef const char* (*FN_GetBuff)(const char* k, int& outLen); 
 typedef bool(*FN_HasBuff)(const char* k); 
 typedef void(*FN_DelBuff)(const char* k);
+typedef const char* (*FN_GetDecrypt)(const char* k, const char* def);
+typedef const char* (*FN_EncryptData)(const char* k, const char* v);
 
 #define DEF_PROC(hDll, name) \
 	FN_##name name = (FN_##name)::GetProcAddress(hDll, #name)
@@ -78,7 +82,10 @@ typedef void(*FN_DelBuff)(const char* k);
 	DEF_PROC(__hDll__, SetBuff); \
 	DEF_PROC(__hDll__, GetBuff); \
 	DEF_PROC(__hDll__, HasBuff); \
-	DEF_PROC(__hDll__, DelBuff);
+	DEF_PROC(__hDll__, DelBuff); \
+	DEF_PROC(__hDll__, GetDecrypt); \
+	DEF_PROC(__hDll__, EncryptData);
+
 
 class KV
 {
@@ -128,6 +135,8 @@ public:
 			this->GetBuff = GetBuff;
 			this->HasBuff = HasBuff;
 			this->DelBuff = DelBuff;
+			this->GetDecrypt = GetDecrypt;
+			this->EncryptData = EncryptData;
 		}
 		else
 		{
@@ -163,6 +172,8 @@ public:
 	FN_GetBuff		 GetBuff;
 	FN_HasBuff		 HasBuff;
 	FN_DelBuff		 DelBuff;
+	FN_GetDecrypt	 GetDecrypt;
+	FN_EncryptData	 EncryptData;
 
 	HMODULE hDll;
 };
