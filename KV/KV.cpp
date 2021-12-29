@@ -11,15 +11,18 @@
 #include <..\crt\src\vcruntime\internal_shared.h>
 #include "..\DES_CBC_5\base64.h"
 #include "..\DES_CBC_5\DesHelper.h"
+#include "..\simdb\simdb.hpp"
 
 #define REVERT_KEY "KV.DLL"
 #define DES_META "..KV.DLL"//要求8位 
 
 std::mutex g_mt_strA;
 std::map<std::string, std::string> g_strA;
+std::string g_strADef;
 
 std::mutex g_mt_strW;
 std::map<std::wstring, std::wstring> g_strW;
+std::wstring g_strWDef;
 
 std::mutex g_mt_int;
 std::map<std::string, int> g_int;
@@ -35,9 +38,14 @@ std::string g_dllPath;
 
 std::mutex g_mt_decryptData;
 std::map<std::string, std::string> g_decryptData;
+std::string g_decryptDataDef;
 
 std::mutex g_mt_encryptData;
 std::string g_encryptData;
+
+simdb g_db("KV.DB", 1024, 10);
+std::mutex g_mt_sharedData;
+std::string g_sharedData;
 
 const char* GetDllPath()
 {	
@@ -48,7 +56,7 @@ const char* GetDllPath()
 	HMODULE hModule = reinterpret_cast<HMODULE>(&__ImageBase);
 	char szPathBuffer[MAX_PATH + 1] = { 0 };
 	::GetModuleFileNameA(hModule, szPathBuffer, MAX_PATH);
-	int len = strlen(szPathBuffer);
+	int len = (int)strlen(szPathBuffer);
 	for (int i = len - 1; i > 0; --i) 
 	{
 		if (szPathBuffer[i] == '\\' || szPathBuffer[i] == '/')
@@ -72,21 +80,29 @@ void revertStr(const char* key, int keyLen, const char* in, char* out, int len)
 
 std::string decrypt(const char* str64, int len64, const char* revertKey, const char* desKey)
 {
-	int lenDesKey = strlen(desKey);
+	if (len64 < 1)
+		return "";
+
+	int lenDesKey = (int)strlen(desKey);
 	char* enkey = new char[lenDesKey];
-	revertStr(revertKey, strlen(revertKey), desKey, enkey, lenDesKey);
+	revertStr(revertKey, (int)strlen(revertKey), desKey, enkey, lenDesKey);
 
 	std::string s = GL::DES_cbc_decrypt_base64(str64, len64, enkey, lenDesKey, enkey, lenDesKey);
+	delete[] enkey;
 	return s;
 }
 
 std::string encrypt(const char* in, int inlen, const char* revertKey, const char* desKey)
 {
-	int lenDesKey = strlen(desKey);
+	if (inlen < 1)
+		return "";
+
+	int lenDesKey = (int)strlen(desKey);
 	char* enkey = new char[lenDesKey];
-	revertStr(revertKey, strlen(revertKey), desKey, enkey, lenDesKey);
+	revertStr(revertKey, (int)strlen(revertKey), desKey, enkey, lenDesKey);
 
 	std::string s = GL::DES_cbc_encrypt_base64(in, inlen, enkey, lenDesKey, enkey, lenDesKey);
+	delete[] enkey;
 
 #ifdef _DEBUG
 	std::string sDebug = decrypt(s.c_str(), s.length(), revertKey, desKey);
@@ -95,26 +111,46 @@ std::string encrypt(const char* in, int inlen, const char* revertKey, const char
 	return s;
 }
 
-void InitEncryData(const char* encryFilePath)
+KV_API const char* Encrypt(const char* data, const char* desKey)
 {
-	if (g_decryptData.size() > 0)
-	{
-		return;
-	}
+	int datalen = (int)strlen(data);
+	if (datalen < 1)
+		return "";
 
+	std::lock_guard<std::mutex> _lock(g_mt_encryptData);
+	int lenDesKey = (int)strlen(desKey);
+	g_encryptData = GL::DES_cbc_encrypt_base64(data, datalen, desKey, lenDesKey, desKey, lenDesKey);
+	return g_encryptData.c_str();
+}
+
+KV_API const char* Decrypt(const char* data, const char* desKey)
+{
+	int datalen = (int)strlen(data);
+	if (datalen < 1)
+		return "";
+
+	std::lock_guard<std::mutex> _lock(g_mt_encryptData);
+	int lenDesKey = (int)strlen(desKey);
+	g_encryptData = GL::DES_cbc_decrypt_base64(data, datalen, desKey, lenDesKey, desKey, lenDesKey);
+	return g_encryptData.c_str();
+}
+
+KV_API bool InitEncryData(const char* encryFilePath/* = NULL*/)
+{
 	std::lock_guard<std::mutex> _lock(g_mt_decryptData);
+
+	g_decryptData.clear();
 
 	std::string sEncryFilePath;
 	if (encryFilePath != NULL)
 		sEncryFilePath = encryFilePath;
 	else
 		sEncryFilePath = GetDllPath() + std::string("\\KV.data");
-
+	
 	std::fstream fin(sEncryFilePath); //打开文件
 	if (!fin.is_open())
 	{
-		g_decryptData.insert(std::make_pair("", ""));
-		return;
+		return false;
 	}
 
 	std::string line;
@@ -146,8 +182,8 @@ void InitEncryData(const char* encryFilePath)
 				continue;//防破解
 			}
 
-			std::string key = decrypt(key64.c_str(), key64.length(), REVERT_KEY, DES_META);
-			std::string val = decrypt(val64.c_str(), val64.length(), REVERT_KEY, DES_META);
+			std::string key = decrypt(key64.c_str(), (int)key64.length(), REVERT_KEY, DES_META);
+			std::string val = decrypt(val64.c_str(), (int)val64.length(), REVERT_KEY, DES_META);
 			
 			g_decryptData.insert(std::make_pair(key, val));
 		}
@@ -157,12 +193,14 @@ void InitEncryData(const char* encryFilePath)
 		}
 	}
 	fin.close();
+
+	return true;
 }
 
 KV_API const char* EncryptData(const char* k, const char* v)
 {
-	std::string ek = encrypt(k, strlen(k), REVERT_KEY, DES_META);
-	std::string ev = encrypt(v, strlen(v), REVERT_KEY, DES_META);
+	std::string ek = encrypt(k, (int)strlen(k), REVERT_KEY, DES_META);
+	std::string ev = encrypt(v, (int)strlen(v), REVERT_KEY, DES_META);
 
 	std::lock_guard<std::mutex> _lock(g_mt_encryptData);
 	g_encryptData = ek + ":" + ev;
@@ -173,9 +211,7 @@ KV_API const char* GetDecrypt(const char* k, const char* def /*= ""*/)
 {
 	if (!k)
 		return def;
-
-	InitEncryData(NULL);
-
+	
 	DWORD ts = GetTickCount();//防破解
 
 	std::lock_guard<std::mutex> _lock(g_mt_decryptData);	
@@ -215,28 +251,40 @@ KV_API bool SetStrW(const wchar_t* k, const wchar_t* v)
 
 KV_API const char* GetStrA(const char* k, const char* def /*= ""*/)
 {
-	if (!k)
-		return def;
-
 	std::lock_guard<std::mutex> _lock(g_mt_strA);
+
+	if (!k)
+	{
+		g_strADef = def;
+		return g_strADef.c_str();
+	}
 
 	auto itFinder = g_strA.find(k);
 	if (itFinder == g_strA.end())
-		return def;
+	{
+		g_strADef = def;
+		return g_strADef.c_str();
+	}
 
 	return itFinder->second.c_str();
 }
 
 KV_API const wchar_t* GetStrW(const wchar_t* k, const wchar_t* def /*= L""*/)
 {
-	if (!k)
-		return def;
-
 	std::lock_guard<std::mutex> _lock(g_mt_strW);
+
+	if (!k)
+	{
+		g_strWDef = def;
+		return g_strWDef.c_str();
+	}
 
 	auto itFinder = g_strW.find(k);
 	if (itFinder == g_strW.end())
-		return def;
+	{
+		g_strWDef = def;
+		return g_strWDef.c_str();
+	}
 
 	return itFinder->second.c_str();
 }
@@ -407,7 +455,7 @@ KV_API const char* GetBuff(const char* k, int& outLen)
 	if (itFinder == g_buff.end())
 		return NULL;
 
-	outLen = itFinder->second.size();
+	outLen = (int)(itFinder->second.size());
 
 	return itFinder->second.data();
 }
@@ -435,3 +483,31 @@ KV_API void DelBuff(const char* k)
 	g_buff.erase(k);
 }
 
+KV_API bool SetSharedMem(const char* k, const char* v)
+{
+	if (k == NULL)
+		return false;
+	if (v == NULL)
+		return g_db.del(k);
+	return (g_db.put(k, v) != 0);
+}
+
+KV_API const char* GetSharedMem(const char* k, const char* def /*= ""*/)
+{
+	if (k == NULL)
+	{
+		g_sharedData = def;
+		return g_sharedData.c_str();
+	}
+
+	std::lock_guard<std::mutex> _lock(g_mt_sharedData);
+	g_sharedData = g_db.get(k);
+	return g_sharedData.c_str();
+}
+
+KV_API void DelSharedMem(const char* k)
+{
+	if (k == NULL)
+		return ;
+	g_db.del(k);
+}

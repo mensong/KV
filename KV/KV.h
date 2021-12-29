@@ -30,9 +30,15 @@ KV_API const char* GetBuff(const char* k, int& outLen);
 KV_API bool HasBuff(const char* k);
 KV_API void DelBuff(const char* k);
 
+KV_API const char* Encrypt(const char* data, const char* desKey);
+KV_API const char* Decrypt(const char* data, const char* desKey);
+KV_API bool InitEncryData(const char* encryFilePath = NULL);
 KV_API const char* GetDecrypt(const char* k, const char* def = "");
 KV_API const char* EncryptData(const char* k, const char* v);
 
+KV_API bool SetSharedMem(const char* k, const char* v);
+KV_API const char* GetSharedMem(const char* k, const char* def = "");
+KV_API void DelSharedMem(const char* k);
 
 #ifndef KV_EXPORTS
 typedef bool(*FN_SetStrA)(const char* k, const char* v); 
@@ -55,8 +61,14 @@ typedef bool(*FN_SetBuff)(const char* k, const char* buff, int buffLen);
 typedef const char* (*FN_GetBuff)(const char* k, int& outLen); 
 typedef bool(*FN_HasBuff)(const char* k); 
 typedef void(*FN_DelBuff)(const char* k);
+typedef const char* (*FN_Encrypt)(const char* data, const char* desKey);
+typedef const char* (*FN_Decrypt)(const char* data, const char* desKey);
+typedef bool(*FN_InitEncryData)(const char* encryFilePath);
 typedef const char* (*FN_GetDecrypt)(const char* k, const char* def);
 typedef const char* (*FN_EncryptData)(const char* k, const char* v);
+typedef bool(*FN_SetSharedMem)(const char* k, const char* v);
+typedef const char* (*FN_GetSharedMem)(const char* k, const char* def);
+typedef void(*FN_DelSharedMem)(const char* k);
 
 #define DEF_PROC(hDll, name) \
 	FN_##name name = (FN_##name)::GetProcAddress(hDll, #name)
@@ -83,8 +95,14 @@ typedef const char* (*FN_EncryptData)(const char* k, const char* v);
 	DEF_PROC(__hDll__, GetBuff); \
 	DEF_PROC(__hDll__, HasBuff); \
 	DEF_PROC(__hDll__, DelBuff); \
+	DEF_PROC(__hDll__, Encrypt); \
+	DEF_PROC(__hDll__, Decrypt); \
+	DEF_PROC(__hDll__, InitEncryData); \
 	DEF_PROC(__hDll__, GetDecrypt); \
-	DEF_PROC(__hDll__, EncryptData);
+	DEF_PROC(__hDll__, EncryptData); \
+	DEF_PROC(__hDll__, SetSharedMem); \
+	DEF_PROC(__hDll__, GetSharedMem); \
+	DEF_PROC(__hDll__, DelSharedMem);
 
 
 class KV
@@ -135,8 +153,14 @@ public:
 			this->GetBuff = GetBuff;
 			this->HasBuff = HasBuff;
 			this->DelBuff = DelBuff;
+			this->Encrypt = Encrypt;
+			this->Decrypt = Decrypt;
+			this->InitEncryData = InitEncryData;
 			this->GetDecrypt = GetDecrypt;
 			this->EncryptData = EncryptData;
+			this->SetSharedMem = SetSharedMem;
+			this->GetSharedMem = GetSharedMem;
+			this->DelSharedMem = DelSharedMem;
 		}
 		else
 		{
@@ -172,8 +196,14 @@ public:
 	FN_GetBuff		 GetBuff;
 	FN_HasBuff		 HasBuff;
 	FN_DelBuff		 DelBuff;
+	FN_Encrypt		 Encrypt;
+	FN_Decrypt		 Decrypt;
+	FN_InitEncryData InitEncryData;
 	FN_GetDecrypt	 GetDecrypt;
 	FN_EncryptData	 EncryptData;
+	FN_SetSharedMem  SetSharedMem;
+	FN_GetSharedMem  GetSharedMem;
+	FN_DelSharedMem  DelSharedMem;
 
 	HMODULE hDll;
 };

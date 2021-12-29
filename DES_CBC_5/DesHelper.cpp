@@ -229,7 +229,7 @@ std::string StrToHex(const unsigned char *md/*字符串*/, int nLen/*转义多少个字符
 void HexToStr(const char* strHex, char* out, int& outLen)
 {
 	outLen = 0;
-	int iLenth = strlen(strHex);
+	int iLenth = (int)strlen(strHex);
 
 	int i = 0;
 	int iOcx;

@@ -35,10 +35,15 @@ _process_thread1(void* arg)
 
 int main()
 {
+	KV::Ins().SetSharedMem("mensong-shared", "123");
+	std::string ss1 = KV::Ins().GetSharedMem("mensong-shared", "");
+	KV::Ins().DelSharedMem("mensong-shared");
+	ss1 = KV::Ins().GetSharedMem("mensong-shared", "");
+
 	std::string s = KV::Ins().EncryptData("url", "https://www.baidu.com");
 	std::string s1 = KV::Ins().EncryptData("url1", "https://www.google.com");
 
-	std::string s2 = KV::Ins().GetDecrypt("url", "");
+	std::string s2 = KV::Ins().GetDecrypt("EntranceBaseUrl", "");
 	std::string s3 = KV::Ins().GetDecrypt("url1", "");
 	std::string s4 = KV::Ins().GetDecrypt("url2", "");
 
@@ -46,6 +51,9 @@ int main()
 	KV::Ins().SetStrW(L"b", L"234");
 	bool b = KV::Ins().HasStrA("a");
 	const char* v = KV::Ins().GetStrA("c", "");
+
+	std::string sen = KV::Ins().Encrypt("https://www.baidu.com", "12345678");
+	sen = KV::Ins().Decrypt(sen.c_str(), "12345678");
 
 	for (int i = 0; i < 30; ++i)
 	{

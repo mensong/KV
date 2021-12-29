@@ -48,6 +48,9 @@
     <ClInclude Include="..\DES_CBC_5\utils.h">
       <Filter>DES_CBC_5</Filter>
     </ClInclude>
+    <ClInclude Include="..\simdb\simdb.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
