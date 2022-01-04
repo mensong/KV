@@ -142,7 +142,7 @@ KV_API bool InitEncryData(const char* encryFilePath/* = NULL*/)
 	g_decryptData.clear();
 
 	std::string sEncryFilePath;
-	if (encryFilePath != NULL)
+	if (encryFilePath != NULL && strlen(encryFilePath) > 0)
 		sEncryFilePath = encryFilePath;
 	else
 		sEncryFilePath = GetDllPath() + std::string("\\KV.data");
@@ -227,6 +227,27 @@ KV_API const char* GetDecrypt(const char* k, const char* def /*= ""*/)
 		return def;
 
 	return itFinder->second.c_str();
+}
+
+KV_API int EncryptDataKeysCount()
+{
+	std::lock_guard<std::mutex> _lock(g_mt_decryptData);
+	return (int)g_decryptData.size();
+}
+
+KV_API const char* GetEncryptDataKey(int keyIdx)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_decryptData);
+	if ((int)g_decryptData.size() <= keyIdx)
+		return "";
+	auto it = g_decryptData.begin();
+	for (; it != g_decryptData.end() && keyIdx > 0; ++it)
+	{
+		--keyIdx;
+	}
+	if (it != g_decryptData.end())
+		return it->first.c_str();
+	return "";
 }
 
 KV_API bool SetStrA(const char* k, const char* v)
@@ -335,6 +356,48 @@ KV_API void DelStrW(const wchar_t* k)
 	g_strW.erase(k);
 }
 
+KV_API int StrAKeysCount()
+{
+	std::lock_guard<std::mutex> _lock(g_mt_strA);
+	return (int)g_strA.size();
+}
+
+KV_API const char* GetStrAKey(int keyIdx)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_strA);
+	if ((int)g_strA.size() <= keyIdx)
+		return "";
+	std::map<std::string, std::string>::iterator it = g_strA.begin();
+	for (; it != g_strA.end() && keyIdx > 0; ++it)
+	{
+		--keyIdx;
+	}
+	if (it != g_strA.end())
+		return it->first.c_str();
+	return "";
+}
+
+KV_API int StrWKeysCount()
+{
+	std::lock_guard<std::mutex> _lock(g_mt_strW);
+	return (int)g_strW.size();
+}
+
+KV_API const wchar_t* GetStrWKey(int keyIdx)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_strW);
+	if ((int)g_strW.size() <= keyIdx)
+		return L"";
+	std::map<std::wstring, std::wstring>::iterator it = g_strW.begin();
+	for (; it != g_strW.end() && keyIdx > 0; ++it)
+	{
+		--keyIdx;
+	}
+	if (it != g_strW.end())
+		return it->first.c_str();
+	return L"";
+}
+
 KV_API bool SetInt(const char* k, int v)
 {
 	if (!k)
@@ -383,6 +446,27 @@ KV_API void DelInt(const char* k)
 	g_int.erase(k);
 }
 
+KV_API int IntKeysCount()
+{
+	std::lock_guard<std::mutex> _lock(g_mt_int);
+	return (int)g_int.size();
+}
+
+KV_API const char* GetIntKey(int keyIdx)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_int);
+	if ((int)g_int.size() <= keyIdx)
+		return "";
+	std::map<std::string, int>::iterator it = g_int.begin();
+	for (; it != g_int.end() && keyIdx > 0; ++it)
+	{
+		--keyIdx;
+	}
+	if (it != g_int.end())
+		return it->first.c_str();
+	return "";
+}
+
 KV_API bool SetDouble(const char* k, double v)
 {
 	if (!k)
@@ -429,6 +513,27 @@ KV_API void DelDouble(const char* k)
 	std::lock_guard<std::mutex> _lock(g_mt_double);
 
 	g_double.erase(k);
+}
+
+KV_API int DoubleKeysCount()
+{
+	std::lock_guard<std::mutex> _lock(g_mt_double);
+	return (int)g_double.size();
+}
+
+KV_API const char* GetDoubleKey(int keyIdx)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_double);
+	if ((int)g_double.size() <= keyIdx)
+		return "";
+	std::map<std::string, double>::iterator it = g_double.begin();
+	for (; it != g_double.end() && keyIdx > 0; ++it)
+	{
+		--keyIdx;
+	}
+	if (it != g_double.end())
+		return it->first.c_str();
+	return "";
 }
 
 KV_API bool SetBuff(const char* k, const char* buff, int buffLen)
@@ -483,6 +588,27 @@ KV_API void DelBuff(const char* k)
 	g_buff.erase(k);
 }
 
+KV_API int BuffKeysCount()
+{
+	std::lock_guard<std::mutex> _lock(g_mt_buff);
+	return (int)g_buff.size();
+}
+
+KV_API const char* GetBuffKey(int keyIdx)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_buff);
+	if ((int)g_buff.size() <= keyIdx)
+		return "";
+	auto it = g_buff.begin();
+	for (; it != g_buff.end() && keyIdx > 0; ++it)
+	{
+		--keyIdx;
+	}
+	if (it != g_buff.end())
+		return it->first.c_str();
+	return "";
+}
+
 KV_API bool SetSharedMem(const char* k, const char* v)
 {
 	if (k == NULL)
@@ -510,4 +636,20 @@ KV_API void DelSharedMem(const char* k)
 	if (k == NULL)
 		return ;
 	g_db.del(k);
+}
+
+
+KV_API int SharedMemKeysCount()
+{
+	return g_db.getKeyStrs().size();
+}
+
+KV_API const char* GetSharedMemKey(int keyIdx)
+{
+	auto keys = g_db.getKeyStrs();
+
+	if ((int)keys.size() <= keyIdx)
+		return "";
+	
+	return keys[keyIdx].str.c_str();
 }

@@ -14,31 +14,45 @@ KV_API bool HasStrA(const char* k);
 KV_API bool HasStrW(const wchar_t* k);
 KV_API void DelStrA(const char* k);
 KV_API void DelStrW(const wchar_t* k);
+KV_API int StrAKeysCount();
+KV_API const char* GetStrAKey(int keyIdx);
+KV_API int StrWKeysCount();
+KV_API const wchar_t* GetStrWKey(int keyIdx);
 
 KV_API bool SetInt(const char* k, int v);
 KV_API int GetInt(const char* k, int def = 0);
 KV_API bool HasInt(const char* k);
 KV_API void DelInt(const char* k);
+KV_API int IntKeysCount();
+KV_API const char* GetIntKey(int keyIdx);
 
 KV_API bool SetDouble(const char* k, double v);
 KV_API double GetDouble(const char* k, double def = 0.0);
 KV_API bool HasDouble(const char* k);
 KV_API void DelDouble(const char* k);
+KV_API int DoubleKeysCount();
+KV_API const char* GetDoubleKey(int keyIdx);
 
 KV_API bool SetBuff(const char* k, const char* buff, int buffLen);
 KV_API const char* GetBuff(const char* k, int& outLen);
 KV_API bool HasBuff(const char* k);
 KV_API void DelBuff(const char* k);
+KV_API int BuffKeysCount();
+KV_API const char* GetBuffKey(int keyIdx);
 
 KV_API const char* Encrypt(const char* data, const char* desKey);
 KV_API const char* Decrypt(const char* data, const char* desKey);
 KV_API bool InitEncryData(const char* encryFilePath = NULL);
 KV_API const char* GetDecrypt(const char* k, const char* def = "");
 KV_API const char* EncryptData(const char* k, const char* v);
+KV_API int EncryptDataKeysCount();
+KV_API const char* GetEncryptDataKey(int keyIdx);
 
 KV_API bool SetSharedMem(const char* k, const char* v);
 KV_API const char* GetSharedMem(const char* k, const char* def = "");
 KV_API void DelSharedMem(const char* k);
+KV_API int SharedMemKeysCount();
+KV_API const char* GetSharedMemKey(int keyIdx);
 
 #ifndef KV_EXPORTS
 typedef bool(*FN_SetStrA)(const char* k, const char* v); 
@@ -48,27 +62,41 @@ typedef const wchar_t* (*FN_GetStrW)(const wchar_t* k, const wchar_t* def);
 typedef bool(*FN_HasStrA)(const char* k); 
 typedef bool(*FN_HasStrW)(const wchar_t* k); 
 typedef void(*FN_DelStrA)(const char* k); 
-typedef void(*FN_DelStrW)(const wchar_t* k); 
+typedef void(*FN_DelStrW)(const wchar_t* k);
+typedef int(*FN_StrAKeysCount)();
+typedef const char* (*FN_GetStrAKey)(int keyIdx);
+typedef int(*FN_StrWKeysCount)();
+typedef const wchar_t* (*FN_GetStrWKey)(int keyIdx);
 typedef bool(*FN_SetInt)(const char* k, int v); 
 typedef int(*FN_GetInt)(const char* k, int def);
 typedef bool(*FN_HasInt)(const char* k); 
-typedef void(*FN_DelInt)(const char* k); 
+typedef void(*FN_DelInt)(const char* k);
+typedef int(*FN_IntKeysCount)();
+typedef const char* (*FN_GetIntKey)(int keyIdx);
 typedef bool(*FN_SetDouble)(const char* k, double v); 
 typedef double(*FN_GetDouble)(const char* k, double def);
 typedef bool(*FN_HasDouble)(const char* k); 
-typedef void(*FN_DelDouble)(const char* k); 
+typedef void(*FN_DelDouble)(const char* k);
+typedef int(*FN_DoubleKeysCount)();
+typedef const char* (*FN_GetDoubleKey)(int keyIdx);
 typedef bool(*FN_SetBuff)(const char* k, const char* buff, int buffLen); 
 typedef const char* (*FN_GetBuff)(const char* k, int& outLen); 
 typedef bool(*FN_HasBuff)(const char* k); 
 typedef void(*FN_DelBuff)(const char* k);
+typedef int(*FN_BuffKeysCount)();
+typedef const char* (*FN_GetBuffKey)(int keyIdx);
 typedef const char* (*FN_Encrypt)(const char* data, const char* desKey);
 typedef const char* (*FN_Decrypt)(const char* data, const char* desKey);
 typedef bool(*FN_InitEncryData)(const char* encryFilePath);
 typedef const char* (*FN_GetDecrypt)(const char* k, const char* def);
 typedef const char* (*FN_EncryptData)(const char* k, const char* v);
+typedef int(*FN_EncryptDataKeysCount)();
+typedef const char* (*FN_GetEncryptDataKey)(int keyIdx);
 typedef bool(*FN_SetSharedMem)(const char* k, const char* v);
 typedef const char* (*FN_GetSharedMem)(const char* k, const char* def);
 typedef void(*FN_DelSharedMem)(const char* k);
+typedef int(*FN_SharedMemKeysCount)();
+typedef const char* (*FN_GetSharedMemKey)(int keyIdx);
 
 #define DEF_PROC(hDll, name) \
 	FN_##name name = (FN_##name)::GetProcAddress(hDll, #name)
@@ -83,26 +111,40 @@ typedef void(*FN_DelSharedMem)(const char* k);
 	DEF_PROC(__hDll__, HasStrW); \
 	DEF_PROC(__hDll__, DelStrA); \
 	DEF_PROC(__hDll__, DelStrW); \
+	DEF_PROC(__hDll__, StrAKeysCount); \
+	DEF_PROC(__hDll__, GetStrAKey); \
+	DEF_PROC(__hDll__, StrWKeysCount); \
+	DEF_PROC(__hDll__, GetStrWKey); \
 	DEF_PROC(__hDll__, SetInt); \
 	DEF_PROC(__hDll__, GetInt); \
 	DEF_PROC(__hDll__, HasInt); \
 	DEF_PROC(__hDll__, DelInt); \
+	DEF_PROC(__hDll__, IntKeysCount); \
+	DEF_PROC(__hDll__, GetIntKey); \
 	DEF_PROC(__hDll__, SetDouble); \
 	DEF_PROC(__hDll__, GetDouble); \
 	DEF_PROC(__hDll__, HasDouble); \
 	DEF_PROC(__hDll__, DelDouble); \
+	DEF_PROC(__hDll__, DoubleKeysCount); \
+	DEF_PROC(__hDll__, GetDoubleKey); \
 	DEF_PROC(__hDll__, SetBuff); \
 	DEF_PROC(__hDll__, GetBuff); \
 	DEF_PROC(__hDll__, HasBuff); \
 	DEF_PROC(__hDll__, DelBuff); \
+	DEF_PROC(__hDll__, BuffKeysCount); \
+	DEF_PROC(__hDll__, GetBuffKey); \
 	DEF_PROC(__hDll__, Encrypt); \
 	DEF_PROC(__hDll__, Decrypt); \
 	DEF_PROC(__hDll__, InitEncryData); \
 	DEF_PROC(__hDll__, GetDecrypt); \
 	DEF_PROC(__hDll__, EncryptData); \
+	DEF_PROC(__hDll__, EncryptDataKeysCount); \
+	DEF_PROC(__hDll__, GetEncryptDataKey); \
 	DEF_PROC(__hDll__, SetSharedMem); \
 	DEF_PROC(__hDll__, GetSharedMem); \
-	DEF_PROC(__hDll__, DelSharedMem);
+	DEF_PROC(__hDll__, DelSharedMem); \
+	DEF_PROC(__hDll__, SharedMemKeysCount); \
+	DEF_PROC(__hDll__, GetSharedMemKey); 
 
 
 class KV
@@ -141,26 +183,40 @@ public:
 			this->HasStrW = HasStrW;
 			this->DelStrA = DelStrA;
 			this->DelStrW = DelStrW;
+			this->StrAKeysCount = StrAKeysCount;
+			this->GetStrAKey = GetStrAKey;
+			this->StrWKeysCount = StrWKeysCount;
+			this->GetStrWKey = GetStrWKey;
 			this->SetInt = SetInt;
 			this->GetInt = GetInt;
 			this->HasInt = HasInt;
 			this->DelInt = DelInt;
+			this->IntKeysCount = IntKeysCount;
+			this->GetIntKey = GetIntKey;
 			this->SetDouble = SetDouble;
 			this->GetDouble = GetDouble;
 			this->HasDouble = HasDouble;
 			this->DelDouble = DelDouble;
+			this->DoubleKeysCount = DoubleKeysCount;
+			this->GetDoubleKey = GetDoubleKey;
 			this->SetBuff = SetBuff;
 			this->GetBuff = GetBuff;
 			this->HasBuff = HasBuff;
 			this->DelBuff = DelBuff;
+			this->BuffKeysCount = BuffKeysCount;
+			this->GetBuffKey = GetBuffKey;
 			this->Encrypt = Encrypt;
 			this->Decrypt = Decrypt;
 			this->InitEncryData = InitEncryData;
 			this->GetDecrypt = GetDecrypt;
 			this->EncryptData = EncryptData;
+			this->EncryptDataKeysCount = EncryptDataKeysCount;
+			this->GetEncryptDataKey = GetEncryptDataKey;
 			this->SetSharedMem = SetSharedMem;
 			this->GetSharedMem = GetSharedMem;
 			this->DelSharedMem = DelSharedMem;
+			this->SharedMemKeysCount = SharedMemKeysCount;
+			this->GetSharedMemKey = GetSharedMemKey;
 		}
 		else
 		{
@@ -184,26 +240,40 @@ public:
 	FN_HasStrW		 HasStrW;
 	FN_DelStrA		 DelStrA;
 	FN_DelStrW		 DelStrW;
+	FN_StrAKeysCount StrAKeysCount;
+	FN_GetStrAKey	 GetStrAKey;
+	FN_StrWKeysCount StrWKeysCount;
+	FN_GetStrWKey	 GetStrWKey;
 	FN_SetInt		 SetInt;
 	FN_GetInt		 GetInt;
 	FN_HasInt		 HasInt;
 	FN_DelInt		 DelInt;
+	FN_IntKeysCount  IntKeysCount;
+	FN_GetIntKey	 GetIntKey;
 	FN_SetDouble	 SetDouble;
 	FN_GetDouble	 GetDouble;
 	FN_HasDouble	 HasDouble;
 	FN_DelDouble	 DelDouble;
+	FN_DoubleKeysCount  DoubleKeysCount;
+	FN_GetDoubleKey	 GetDoubleKey;
 	FN_SetBuff		 SetBuff;
 	FN_GetBuff		 GetBuff;
 	FN_HasBuff		 HasBuff;
 	FN_DelBuff		 DelBuff;
+	FN_BuffKeysCount BuffKeysCount;
+	FN_GetBuffKey	 GetBuffKey;
 	FN_Encrypt		 Encrypt;
 	FN_Decrypt		 Decrypt;
 	FN_InitEncryData InitEncryData;
 	FN_GetDecrypt	 GetDecrypt;
 	FN_EncryptData	 EncryptData;
+	FN_EncryptDataKeysCount EncryptDataKeysCount;
+	FN_GetEncryptDataKey GetEncryptDataKey;
 	FN_SetSharedMem  SetSharedMem;
 	FN_GetSharedMem  GetSharedMem;
 	FN_DelSharedMem  DelSharedMem;
+	FN_SharedMemKeysCount SharedMemKeysCount;
+	FN_GetSharedMemKey GetSharedMemKey;
 
 	HMODULE hDll;
 };
