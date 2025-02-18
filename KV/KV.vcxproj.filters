@@ -16,6 +16,9 @@
     <Filter Include="DES_CBC_5">
       <UniqueIdentifier>{440ad983-e903-4e41-bea8-9be1a57b422a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shm">
+      <UniqueIdentifier>{4144596b-d3f1-4bf7-96d4-1fed369f1ab8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -48,8 +51,11 @@
     <ClInclude Include="..\DES_CBC_5\utils.h">
       <Filter>DES_CBC_5</Filter>
     </ClInclude>
-    <ClInclude Include="..\simdb\simdb.hpp">
-      <Filter>头文件</Filter>
+    <ClInclude Include="..\shm\GlobalMutex.h">
+      <Filter>shm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shm\shm.h">
+      <Filter>shm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -76,6 +82,12 @@
     </ClCompile>
     <ClCompile Include="..\DES_CBC_5\utils.cpp">
       <Filter>DES_CBC_5</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shm\GlobalMutex.cpp">
+      <Filter>shm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shm\shm.cpp">
+      <Filter>shm</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

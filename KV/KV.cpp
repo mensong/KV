@@ -11,7 +11,8 @@
 #include <..\crt\src\vcruntime\internal_shared.h>
 #include "..\DES_CBC_5\base64.h"
 #include "..\DES_CBC_5\DesHelper.h"
-#include "..\simdb\simdb.hpp"
+//#include "..\simdb\simdb.hpp"
+#include "..\shm\shm.h"
 
 #define REVERT_KEY "KV.DLL"
 #define DES_META "..KV.DLL"//要求8位 
@@ -43,30 +44,26 @@ std::string g_decryptDataDef;
 std::mutex g_mt_encryptData;
 std::string g_encryptData;
 
-simdb g_db("KV.DB", 1024, 10);
+//simdb g_db("KV.DB", 1024, 10);
+SHM g_shm;
 std::mutex g_mt_sharedData;
 std::string g_sharedData;
 
-const char* GetDllPath()
-{	
-	if (g_dllPath.size() != 0)
-		return g_dllPath.c_str();
-
-	//std::lock_guard<std::mutex> _lock(g_mt_dllPath);
-	HMODULE hModule = reinterpret_cast<HMODULE>(&__ImageBase);
-	char szPathBuffer[MAX_PATH + 1] = { 0 };
-	::GetModuleFileNameA(hModule, szPathBuffer, MAX_PATH);
-	int len = (int)strlen(szPathBuffer);
-	for (int i = len - 1; i > 0; --i) 
-	{
-		if (szPathBuffer[i] == '\\' || szPathBuffer[i] == '/')
-		{
-			szPathBuffer[i] = '\0';
-			g_dllPath = szPathBuffer;
-			break;
-		}
-	}
-	return g_dllPath.c_str();//返回DLL自身的绝对路径
+std::wstring AnsiToUnicode(const std::string& multiByteStr, UINT codePage = 936)
+{
+	wchar_t* pWideCharStr; //定义返回的宽字符指针
+	int nLenOfWideCharStr; //保存宽字符个数，注意不是字节数
+	const char* pMultiByteStr = multiByteStr.c_str();
+	//获取宽字符的个数
+	nLenOfWideCharStr = MultiByteToWideChar(codePage, 0, pMultiByteStr, -1, NULL, 0);
+	//获得宽字符指针
+	pWideCharStr = (wchar_t*)(HeapAlloc(GetProcessHeap(), 0, nLenOfWideCharStr * sizeof(wchar_t)));
+	MultiByteToWideChar(codePage, 0, pMultiByteStr, -1, pWideCharStr, nLenOfWideCharStr);
+	//返回
+	std::wstring wideByteRet(pWideCharStr, nLenOfWideCharStr);
+	//销毁内存中的字符串
+	HeapFree(GetProcessHeap(), 0, pWideCharStr);
+	return wideByteRet.c_str();
 }
 
 //in out 的长度必须为len
@@ -145,7 +142,7 @@ KV_API bool InitEncryData(const char* encryFilePath/* = NULL*/)
 	if (encryFilePath != NULL && strlen(encryFilePath) > 0)
 		sEncryFilePath = encryFilePath;
 	else
-		sEncryFilePath = GetDllPath() + std::string("\\KV.data");
+		sEncryFilePath = "KV.data";
 	
 	std::fstream fin(sEncryFilePath); //打开文件
 	if (!fin.is_open())
@@ -609,47 +606,25 @@ KV_API const char* GetBuffKey(int keyIdx)
 	return "";
 }
 
-KV_API bool SetSharedMem(const char* k, const char* v)
+KV_API bool InitSharedMem(const char* globalName, int maxDataCount, int perDataSize)
 {
-	if (k == NULL)
-		return false;
-	if (v == NULL)
-		return g_db.del(k);
-	return (g_db.put(k, v) != 0);
+	std::wstring wGlobalName = AnsiToUnicode(globalName);
+	return g_shm.Init(wGlobalName.c_str(), maxDataCount, perDataSize);
 }
 
-KV_API const char* GetSharedMem(const char* k, const char* def /*= ""*/)
+KV_API bool SetSharedMem(int dataID, const char* v)
 {
-	if (k == NULL)
-	{
-		g_sharedData = def;
-		return g_sharedData.c_str();
-	}
+	return g_shm.Write(v, strlen(v) + 1, dataID);
+}
+
+KV_API const char* GetSharedMem(int dataID)
+{
+	int dataSize = g_shm.Read(NULL, dataID);
+	if (dataSize == -1 || dataSize == 0)
+		return "";
 
 	std::lock_guard<std::mutex> _lock(g_mt_sharedData);
-	g_sharedData = g_db.get(k);
+	g_sharedData.resize(dataSize + 1, '\0');
+    g_shm.Read(&g_sharedData[0], dataID);
 	return g_sharedData.c_str();
-}
-
-KV_API void DelSharedMem(const char* k)
-{
-	if (k == NULL)
-		return ;
-	g_db.del(k);
-}
-
-
-KV_API int SharedMemKeysCount()
-{
-	return g_db.getKeyStrs().size();
-}
-
-KV_API const char* GetSharedMemKey(int keyIdx)
-{
-	auto keys = g_db.getKeyStrs();
-
-	if ((int)keys.size() <= keyIdx)
-		return "";
-	
-	return keys[keyIdx].str.c_str();
 }

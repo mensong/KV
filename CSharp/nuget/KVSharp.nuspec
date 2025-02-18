@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>KVSharp</id>
+    <version>1.0.1</version>
+    <title>KVSharp</title>
+    <authors>Mensong</authors>
+    <owners></owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectUrl>https://github.com/mensong/KV</projectUrl>
+    <description>Local single key value component.</description>
+    <tags>kv,KVSharp,keyvalue</tags>
+    <repository type="git" url="https://github.com/mensong/KV" />
+    <dependencies>
+	  <group targetFramework=".NETFramework2.0" />
+	  <group targetFramework=".NETFramework3.0" />
+      <group targetFramework=".NETFramework3.5" />
+      <group targetFramework=".NETFramework4.0" />
+      <group targetFramework=".NETFramework4.5" />
+      <group targetFramework=".NETFramework4.6" />
+      <group targetFramework=".NETFramework4.7" />
+      <group targetFramework=".NETFramework4.8" />
+	  <group targetFramework="net5.0" />
+      <group targetFramework="net6.0" />
+      <group targetFramework="net7.0" />
+      <group targetFramework="net8.0" />
+      <group targetFramework=".NETStandard2.0" />
+    </dependencies>
+  </metadata>
+  <files>
+  
+	<file src="..\..\x64\Release\KV.dll" target="build\runtimes\win-x64\native\KV.dll" />
+	<file src="..\..\Win32\Release\KV.dll" target="build\runtimes\win-x86\native\KV.dll" />
+    <file src="KVSharp.targets" target="build\KVSharp.targets" />
+	
+    <file src="..\KVSharp.netstandard\bin\Release\netstandard2.0\KVSharp.dll" target="lib\netstandard2.0\KVSharp.dll" />
+	<file src="..\KVSharp.framework20\bin\Release\KVSharp.dll" target="lib\net20\KVSharp.dll" />
+	<file src="..\KVSharp.framework30\bin\Release\KVSharp.dll" target="lib\net30\KVSharp.dll" />
+	<file src="..\KVSharp.framework35\bin\Release\KVSharp.dll" target="lib\net35\KVSharp.dll" />
+	<file src="..\KVSharp.framework40\bin\Release\KVSharp.dll" target="lib\net40\KVSharp.dll" />
+	<file src="..\KVSharp.framework45\bin\Release\KVSharp.dll" target="lib\net45\KVSharp.dll" />
+	<file src="..\KVSharp.framework46\bin\Release\KVSharp.dll" target="lib\net46\KVSharp.dll" />
+	<file src="..\KVSharp.framework47\bin\Release\KVSharp.dll" target="lib\net47\KVSharp.dll" />
+	<file src="..\KVSharp.framework48\bin\Release\KVSharp.dll" target="lib\net48\KVSharp.dll" />
+	<file src="..\..\README.md" target="README.md" />
+  </files>
+</package>
