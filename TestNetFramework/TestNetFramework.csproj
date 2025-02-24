@@ -36,7 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="KVSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\KVSharp.1.0.1\lib\net48\KVSharp.dll</HintPath>
+      <HintPath>..\packages\KVSharp.1.0.2\lib\net48\KVSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -86,11 +86,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\KVSharp.1.0.1\build\KVSharp.targets" Condition="Exists('..\packages\KVSharp.1.0.1\build\KVSharp.targets')" />
+  <Import Project="..\packages\KVSharp.1.0.2\build\KVSharp.targets" Condition="Exists('..\packages\KVSharp.1.0.2\build\KVSharp.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\KVSharp.1.0.1\build\KVSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\KVSharp.1.0.1\build\KVSharp.targets'))" />
+    <Error Condition="!Exists('..\packages\KVSharp.1.0.2\build\KVSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\KVSharp.1.0.2\build\KVSharp.targets'))" />
   </Target>
 </Project>

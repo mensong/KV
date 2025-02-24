@@ -23,12 +23,12 @@ namespace TestNetFramework
 
         private void button1_Click(object sender, EventArgs e)
         {
-            KV.SetSharedMem(0, "MENSONG");
+            KV.SetSharedMem("MyKV", 0, "MENSONG");
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(KV.GetSharedMem(0));
+            MessageBox.Show(KV.GetSharedMem("MyKV", 0));
         }
     }
 }
