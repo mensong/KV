@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KVSharp" Version="1.0.1" />
+    <ProjectReference Include="..\CSharp\KVSharp.netstandard\KVSharp.netstandard.csproj" />
   </ItemGroup>
 
 </Project>

@@ -67,8 +67,7 @@ int main(int argc, char* argv[])
     }
 #else
 
-    //bool b = shm.Init(L"mensong", 10, 512);
-    KV::Ins().InitSharedMem("mensong", 10, 512);
+    KV::Ins().InitSharedMem("MyKV", 10, 512);
     
     for (int i = 0; i < 30; ++i)
     {

@@ -8,6 +8,7 @@ namespace TestNet
         {
             InitializeComponent();
 
+            KV.Init();
             KV.InitSharedMem("MyKV", 10, 512);
         }
 
