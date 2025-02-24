@@ -45,7 +45,7 @@ std::mutex g_mt_encryptData;
 std::string g_encryptData;
 
 //simdb g_db("KV.DB", 1024, 10);
-SHM g_shm;
+std::map<std::string, SHM> g_shms;
 std::mutex g_mt_sharedData;
 std::string g_sharedData;
 
@@ -608,23 +608,38 @@ KV_API const char* GetBuffKey(int keyIdx)
 
 KV_API bool InitSharedMem(const char* globalName, int maxDataCount, int perDataSize)
 {
-	std::wstring wGlobalName = AnsiToUnicode(globalName);
-	return g_shm.Init(wGlobalName.c_str(), maxDataCount, perDataSize);
+	if (g_shms.find(globalName) == g_shms.end())
+	{
+		std::wstring wGlobalName = AnsiToUnicode(globalName);
+		if (!g_shms[globalName].Init(wGlobalName.c_str(), maxDataCount, perDataSize))
+		{
+			g_shms.erase(globalName);
+			return false;
+		}
+	}
+	return true;
 }
 
-KV_API bool SetSharedMem(int dataID, const char* v)
+KV_API bool SetSharedMem(const char* globalName, int dataID, const char* v)
 {
-	return g_shm.Write(v, strlen(v) + 1, dataID);
+	auto itFinder = g_shms.find(globalName);
+	if (itFinder == g_shms.end())
+        return false;
+	return itFinder->second.Write(v, strlen(v) + 1, dataID);
 }
 
-KV_API const char* GetSharedMem(int dataID)
+KV_API const char* GetSharedMem(const char* globalName, int dataID)
 {
-	int dataSize = g_shm.Read(NULL, dataID);
+	auto itFinder = g_shms.find(globalName);
+	if (itFinder == g_shms.end())
+		return "";
+
+	int dataSize = itFinder->second.Read(NULL, dataID);
 	if (dataSize == -1 || dataSize == 0)
 		return "";
 
 	std::lock_guard<std::mutex> _lock(g_mt_sharedData);
 	g_sharedData.resize(dataSize + 1, '\0');
-    g_shm.Read(&g_sharedData[0], dataID);
+	itFinder->second.Read(&g_sharedData[0], dataID);
 	return g_sharedData.c_str();
 }

@@ -55,8 +55,8 @@ KV_API int __cdecl EncryptDataKeysCount();
 KV_API const char* __cdecl GetEncryptDataKey(int keyIdx);
 
 KV_API bool __cdecl InitSharedMem(const char* globalName, int maxDataCount, int perDataSize);
-KV_API bool __cdecl SetSharedMem(int dataID, const char* v);
-KV_API const char* __cdecl GetSharedMem(int dataID);
+KV_API bool __cdecl SetSharedMem(const char* globalName, int dataID, const char* v);
+KV_API const char* __cdecl GetSharedMem(const char* globalName, int dataID);
 
 
 #define DEF_PROC(hDll, name) \
@@ -102,8 +102,8 @@ public:
 	typedef int(__cdecl *FN_EncryptDataKeysCount)();
 	typedef const char* (__cdecl *FN_GetEncryptDataKey)(int keyIdx);
 	typedef bool (__cdecl *FN_InitSharedMem)(const char* globalName, int maxDataCount, int perDataSize);
-	typedef bool(__cdecl *FN_SetSharedMem)(int dataID, const char* v);
-	typedef const char* (__cdecl *FN_GetSharedMem)(int dataID);
+	typedef bool(__cdecl *FN_SetSharedMem)(const char* globalName, int dataID, const char* v);
+	typedef const char* (__cdecl *FN_GetSharedMem)(const char* globalName, int dataID);
 
 	KV()
 	{

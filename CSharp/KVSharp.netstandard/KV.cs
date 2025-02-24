@@ -307,13 +307,13 @@ namespace KVSharp
         public static extern bool InitSharedMem(string globalName, int maxDataCount, int perDataSize);
 
         [DllImport("KV.dll", EntryPoint = "SetSharedMem", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool SetSharedMem(int dataID, string v);
+        public static extern bool SetSharedMem(string globalName, int dataID, string v);
 
         [DllImport("KV.dll", EntryPoint = "GetSharedMem", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr _GetSharedMem(int dataID);
-        public static string GetSharedMem(int dataID)
+        private static extern IntPtr _GetSharedMem(string globalName, int dataID);
+        public static string GetSharedMem(string globalName, int dataID)
         {
-            IntPtr p = _GetSharedMem(dataID);
+            IntPtr p = _GetSharedMem(globalName, dataID);
             if (p == IntPtr.Zero)
                 return null;
 

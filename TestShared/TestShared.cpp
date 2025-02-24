@@ -2,7 +2,6 @@
 //
 
 #include <iostream>
-#include "../shm/shm.h"
 #include <process.h>
 #include "../KV/KV.h"
 
@@ -17,9 +16,7 @@ _process_thread(void* arg)
 {
     while (1)
     {
-        //const char* data = "mensong";
-        //bool b = shm.Write(data, strlen(data) + 1, 0);
-        KV::Ins().SetSharedMem(0, "mensong");
+        KV::Ins().SetSharedMem("MyKV", 0, "mensong");
     }
 }
 
@@ -32,41 +29,12 @@ _process_thread1(void* arg)
 {
     while (1)
     {
-        //char mem[10] = { 0 };
-        //int readed = shm.Read(mem, 0);
-        KV::Ins().GetSharedMem(0);
+        KV::Ins().GetSharedMem("MyKV", 0);
     }
 }
 
 int main(int argc, char* argv[])
 {
-#if 0
-    GlobalMutex gm;
-    gm.Init(L"mensongMutex");
-    if (gm.IsValid())
-    {
-        while (true)
-        {
-            if (gm.Lock())
-            {
-                std::cout << "Working" << std::endl;
-                //Sleep(1000);
-                gm.Unlock();
-                std::cout << "Unwork" << std::endl;
-                //Sleep(1000);
-            }
-            else
-            {
-                std::cout << "Lock fail" << std::endl;
-            }
-        }
-    }
-    else
-    {
-        std::cout << "GlobalMutex fail" << std::endl;
-    }
-#else
-
     KV::Ins().InitSharedMem("MyKV", 10, 512);
     
     for (int i = 0; i < 30; ++i)
@@ -79,8 +47,6 @@ int main(int argc, char* argv[])
 
     while (1)
         Sleep(10000);
-
-#endif
 	
     return 0;
 }
