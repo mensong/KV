@@ -17,6 +17,7 @@ _process_thread(void* arg)
     while (1)
     {
         KV::Ins().SetSharedMem("MyKV", 0, "mensong");
+        Sleep(1);
     }
 }
 
@@ -30,12 +31,13 @@ _process_thread1(void* arg)
     while (1)
     {
         KV::Ins().GetSharedMem("MyKV", 0);
+        Sleep(1);
     }
 }
 
 int main(int argc, char* argv[])
 {
-    KV::Ins().InitSharedMem("MyKV", 10, 512);
+    KV::Ins().InitSharedMem("MyKV", 10000000, 512);
     
     for (int i = 0; i < 30; ++i)
     {

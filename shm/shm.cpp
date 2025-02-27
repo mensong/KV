@@ -36,6 +36,9 @@ bool SHM::Init(const TCHAR* shmName, int maxDataCount, int perDataSize)
     m_maxDataCount = maxDataCount;
     m_perDataSize = perDataSize;
 
+    LARGE_INTEGER allocSize;
+    allocSize.QuadPart = maxDataCount * (perDataSize + INDEX_SIZE);
+
     bool created = false;
     //打开共享的文件对象。
     m_hMapFile = OpenFileMapping(
@@ -49,9 +52,10 @@ bool SHM::Init(const TCHAR* shmName, int maxDataCount, int perDataSize)
             INVALID_HANDLE_VALUE, 
             NULL, 
             PAGE_READWRITE/*物理页*/, 
-            0/*高位*/,
-            maxDataCount * (perDataSize + INDEX_SIZE)/*低位*/,
+            allocSize.HighPart/*高位*/,
+            allocSize.LowPart/*低位*/,
             shmName);
+        DWORD err = GetLastError();
         created = true;
     }
 
@@ -64,7 +68,9 @@ bool SHM::Init(const TCHAR* shmName, int maxDataCount, int perDataSize)
     m_pBuf = (char*)MapViewOfFile(
         m_hMapFile,
         FILE_MAP_ALL_ACCESS,
-        0, 0, 0);
+        0, 
+        0, 
+        0);
     if (!m_pBuf)
     {
         CloseHandle(m_hMapFile);
@@ -73,7 +79,7 @@ bool SHM::Init(const TCHAR* shmName, int maxDataCount, int perDataSize)
     }
     if (created)
     {
-        memset(m_pBuf, 0, maxDataCount * (perDataSize + INDEX_SIZE));
+        memset(m_pBuf, 0, allocSize.QuadPart);
     }
 
     TCHAR dataLockName[MAX_PATH] = TEXT("");
