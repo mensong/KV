@@ -4,7 +4,6 @@
 #include <windows.h>
 #endif
 #include <string>
-#include <stdint.h>
 
 #ifdef KV_EXPORTS
 #define KV_API extern "C" __declspec(dllexport)

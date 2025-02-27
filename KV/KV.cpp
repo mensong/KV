@@ -625,7 +625,7 @@ KV_API bool SetSharedMem(const char* globalName, int dataID, const char* v)
 	auto itFinder = g_shms.find(globalName);
 	if (itFinder == g_shms.end())
         return false;
-	return itFinder->second.Write(v, strlen(v) + 1, dataID);
+	return itFinder->second.Write(v, (int)strlen(v) + 1, dataID);
 }
 
 KV_API const char* GetSharedMem(const char* globalName, int dataID)
