@@ -51,10 +51,10 @@
     <ClInclude Include="..\DES_CBC_5\utils.h">
       <Filter>DES_CBC_5</Filter>
     </ClInclude>
-    <ClInclude Include="..\shm\GlobalMutex.h">
+    <ClInclude Include="..\SHM\shm\GlobalMutex.h">
       <Filter>shm</Filter>
     </ClInclude>
-    <ClInclude Include="..\shm\shm.h">
+    <ClInclude Include="..\SHM\shm\SHM.h">
       <Filter>shm</Filter>
     </ClInclude>
   </ItemGroup>
@@ -83,10 +83,10 @@
     <ClCompile Include="..\DES_CBC_5\utils.cpp">
       <Filter>DES_CBC_5</Filter>
     </ClCompile>
-    <ClCompile Include="..\shm\GlobalMutex.cpp">
+    <ClCompile Include="..\SHM\shm\GlobalMutex.cpp">
       <Filter>shm</Filter>
     </ClCompile>
-    <ClCompile Include="..\shm\shm.cpp">
+    <ClCompile Include="..\SHM\shm\SHM.cpp">
       <Filter>shm</Filter>
     </ClCompile>
   </ItemGroup>

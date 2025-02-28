@@ -12,7 +12,7 @@
 #include "..\DES_CBC_5\base64.h"
 #include "..\DES_CBC_5\DesHelper.h"
 //#include "..\simdb\simdb.hpp"
-#include "..\shm\shm.h"
+#include "..\SHM\shm\shm.h"
 
 #define REVERT_KEY "KV.DLL"
 #define DES_META "..KV.DLL"//ÒªÇó8Î» 
@@ -606,12 +606,12 @@ KV_API const char* GetBuffKey(int keyIdx)
 	return "";
 }
 
-KV_API bool InitSharedMem(const char* globalName, int maxDataCount, int perDataSize)
+KV_API bool InitSharedMem(const char* globalName, int blockCount, int blockSize)
 {
 	if (g_shms.find(globalName) == g_shms.end())
 	{
 		std::wstring wGlobalName = AnsiToUnicode(globalName);
-		if (!g_shms[globalName].Init(wGlobalName.c_str(), maxDataCount, perDataSize))
+		if (!g_shms[globalName].Init(wGlobalName.c_str(), blockCount, blockSize))
 		{
 			g_shms.erase(globalName);
 			return false;
