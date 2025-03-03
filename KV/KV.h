@@ -54,8 +54,12 @@ KV_API int __cdecl EncryptDataKeysCount();
 KV_API const char* __cdecl GetEncryptDataKey(int keyIdx);
 
 KV_API bool __cdecl InitSharedMem(const char* globalName, int blockCount, int blockSize);
-KV_API bool __cdecl SetSharedMem(const char* globalName, int dataID, const char* v);
-KV_API const char* __cdecl GetSharedMem(const char* globalName, int dataID);
+KV_API bool __cdecl SetSharedMem(const char* globalName, const char* key, const char* data, int dataSize);
+//获得数据的长度可传outDataBuf=NULL进去
+KV_API int __cdecl GetSharedMem(const char* globalName, const char* key, char* outDataBuf, int outDataBufSize);
+//
+typedef bool(* __cdecl FN_TraverseSharedMemKeysCallback)(const char* key);
+KV_API int __cdecl GetSharedMemKeys(const char* globalName, FN_TraverseSharedMemKeysCallback cb);
 
 
 #define DEF_PROC(hDll, name) \
@@ -101,8 +105,9 @@ public:
 	typedef int(__cdecl *FN_EncryptDataKeysCount)();
 	typedef const char* (__cdecl *FN_GetEncryptDataKey)(int keyIdx);
 	typedef bool (__cdecl *FN_InitSharedMem)(const char* globalName, int blockCount, int blockSize);
-	typedef bool(__cdecl *FN_SetSharedMem)(const char* globalName, int dataID, const char* v);
-	typedef const char* (__cdecl *FN_GetSharedMem)(const char* globalName, int dataID);
+	typedef bool(__cdecl *FN_SetSharedMem)(const char* globalName, int dataID, const char* data, int dataSize);
+	typedef int (__cdecl *FN_GetSharedMem)(const char* globalName, int dataID, char* outDataBuf, int outDataBufSize);
+	typedef int (__cdecl* FN_GetSharedMemKeys)(const char* globalName, FN_TraverseSharedMemKeysCallback cb);
 
 	KV()
 	{
@@ -150,6 +155,7 @@ public:
 			DEF_PROC(__hDll__, InitSharedMem);
 			DEF_PROC(__hDll__, SetSharedMem);
 			DEF_PROC(__hDll__, GetSharedMem);
+            DEF_PROC(__hDll__, GetSharedMemKeys);
 		}
 	}
 		
@@ -193,6 +199,7 @@ public:
 	FN_InitSharedMem  InitSharedMem;
 	FN_SetSharedMem  SetSharedMem;
 	FN_GetSharedMem  GetSharedMem;
+	FN_GetSharedMemKeys GetSharedMemKeys;
 
 	static KV& Ins()
 	{

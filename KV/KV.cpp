@@ -11,8 +11,7 @@
 #include <..\crt\src\vcruntime\internal_shared.h>
 #include "..\DES_CBC_5\base64.h"
 #include "..\DES_CBC_5\DesHelper.h"
-//#include "..\simdb\simdb.hpp"
-#include "..\SHM\shm\shm.h"
+#include "..\simdb\simdb.hpp"
 
 #define REVERT_KEY "KV.DLL"
 #define DES_META "..KV.DLL"//要求8位 
@@ -44,11 +43,6 @@ std::string g_decryptDataDef;
 std::mutex g_mt_encryptData;
 std::string g_encryptData;
 
-//simdb g_db("KV.DB", 1024, 10);
-std::map<std::string, SHM> g_shms;
-std::mutex g_mt_sharedData;
-std::string g_sharedData;
-
 std::wstring AnsiToUnicode(const std::string& multiByteStr, UINT codePage = 936)
 {
 	wchar_t* pWideCharStr; //定义返回的宽字符指针
@@ -65,6 +59,9 @@ std::wstring AnsiToUnicode(const std::string& multiByteStr, UINT codePage = 936)
 	HeapFree(GetProcessHeap(), 0, pWideCharStr);
 	return wideByteRet.c_str();
 }
+
+std::map<std::string, simdb> g_shms;
+
 
 //in out 的长度必须为len
 void revertStr(const char* key, int keyLen, const char* in, char* out, int len)
@@ -608,10 +605,11 @@ KV_API const char* GetBuffKey(int keyIdx)
 
 KV_API bool InitSharedMem(const char* globalName, int blockCount, int blockSize)
 {
+	std::lock_guard<std::mutex> _lock(g_mt_shms);
+
 	if (g_shms.find(globalName) == g_shms.end())
 	{
-		std::wstring wGlobalName = AnsiToUnicode(globalName);
-		if (!g_shms[globalName].Init(wGlobalName.c_str(), blockCount, blockSize))
+		if (!g_shms[globalName].Init(globalName, blockCount, blockSize))
 		{
 			g_shms.erase(globalName);
 			return false;
@@ -620,26 +618,65 @@ KV_API bool InitSharedMem(const char* globalName, int blockCount, int blockSize)
 	return true;
 }
 
-KV_API bool SetSharedMem(const char* globalName, int dataID, const char* v)
+KV_API int __cdecl GetSharedMemKeys(const char* globalName, FN_TraverseSharedMemKeysCallback cb)
 {
+	
+}
+
+KV_API bool SetSharedMem(const char* globalName, int dataID, const char* data, int dataSize)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_shms);
+
 	auto itFinder = g_shms.find(globalName);
 	if (itFinder == g_shms.end())
         return false;
-	return itFinder->second.Write(v, (int)strlen(v) + 1, dataID);
+	return itFinder->second.Write(data, 
+		(dataSize == 0 ? (int)strlen(data) + 1 : dataSize), 
+		dataID);
 }
 
-KV_API const char* GetSharedMem(const char* globalName, int dataID)
+KV_API int GetSharedMem(const char* globalName, int dataID, char* outDataBuf, int bufSize)
 {
+	std::lock_guard<std::mutex> _lock(g_mt_shms);
+
 	auto itFinder = g_shms.find(globalName);
 	if (itFinder == g_shms.end())
-		return "";
+		return 0;
 
-	int dataSize = itFinder->second.Read(NULL, dataID);
-	if (dataSize == -1 || dataSize == 0)
-		return "";
+	if (!outDataBuf || bufSize == 0)
+	{
+		int dataSize = itFinder->second.ReadSize(dataID);
+		if (dataSize <= 0)
+			return 0;
+		return dataSize;
+	}
 
-	std::lock_guard<std::mutex> _lock(g_mt_sharedData);
-	g_sharedData.resize(dataSize + 1, '\0');
-	itFinder->second.Read(&g_sharedData[0], dataID);
-	return g_sharedData.c_str();
+	return itFinder->second.Read(dataID, outDataBuf, bufSize);
+}
+
+KV_API int __cdecl GetSharedMemDataIDs(const char* globalName, int** outDataIDsList)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_shms);
+
+    if (g_shms.find(globalName) == g_shms.end())
+        return 0;
+
+	std::vector<int> idxs;
+	g_shms[globalName].ListDataIDs(idxs);
+	if (idxs.empty())
+        return 0;
+	*outDataIDsList = (int*)malloc(sizeof(int) * idxs.size());
+	for (size_t i = 0; i < idxs.size(); i++)
+	{
+		*outDataIDsList[i] = idxs[i];
+	}
+
+	return idxs.size();
+}
+
+KV_API void __cdecl ReleaseSharedMemBuf(void* buf)
+{
+	if (!buf)
+		return;
+	free(buf);
 }

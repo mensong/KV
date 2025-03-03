@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 namespace KVSharp
@@ -178,7 +179,23 @@ namespace KVSharp
         }
 
         [DllImport("KV.dll", EntryPoint = "SetBuff", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool SetBuff(string k, byte[] buff, int buffLen);
+        private static extern bool _SetBuff(string k, IntPtr buff, int buffLen);
+        public static bool SetBuff(string k, byte[] buff)
+        {
+            IntPtr ptr = Marshal.AllocHGlobal(buff.Length);  // 分配非托管内存‌:ml-citation{ref="3" data="citationList"}
+            try
+            {
+                if (!_SetBuff(k, ptr, buff.Length))  // 传递指针
+                {
+                    return false;
+                }
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);  // 必须释放‌:ml-citation{ref="3" data="citationList"}
+            }
+            return true;
+        }
 
         [DllImport("KV.dll", EntryPoint = "GetBuff", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr _GetBuff(string k, out int outLen);
@@ -307,25 +324,52 @@ namespace KVSharp
         public static extern bool InitSharedMem(string globalName, int blockCount, int blockSize);
 
         [DllImport("KV.dll", EntryPoint = "SetSharedMem", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool SetSharedMem(string globalName, int dataID, string v);
-
-        [DllImport("KV.dll", EntryPoint = "GetSharedMem", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr _GetSharedMem(string globalName, int dataID);
-        public static string GetSharedMem(string globalName, int dataID)
+        private static extern bool _SetSharedMem(string globalName, int dataID, IntPtr data, int dataSize);
+        public static bool SetSharedMem(string globalName, int dataID, byte[] data)
         {
-            IntPtr p = _GetSharedMem(globalName, dataID);
-            if (p == IntPtr.Zero)
-                return null;
+            GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            try
+            {
+                IntPtr ptr = handle.AddrOfPinnedObject();
+                return _SetSharedMem(globalName, dataID, ptr, data.Length);  //传递指针给DLL
+            }
+            finally
+            {
+                handle.Free();  // 确保释放
+            }
+        }
 
-            //return Marshal.PtrToStringAnsi(p);
 
-            int length = 0;
-            while (Marshal.ReadByte(p, length) != 0)
-                length++; // 计算字符串长度（不包括结尾的\0字符）
-            byte[] byteArray = new byte[length];
-            Marshal.Copy(p, byteArray, 0, length);//复制数据到byte数组
-            string result = Encoding.Default.GetString(byteArray); //转UTF-8编码
-            return result;
+        [DllImport("KV.dll", EntryPoint = "GetSharedMem", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern int _GetSharedMem(string globalName, int dataID, IntPtr outDataBuf, int outDataBufSize);
+        public static int GetSharedMemSize(string globalName, int dataID)
+        {
+            int len = _GetSharedMem(globalName, dataID, IntPtr.Zero, 0);
+            return len;
+        }
+        public static void GetSharedMem(string globalName, int dataID, out byte[] outDataBuf)
+        {
+            int bufferSize = GetSharedMemSize(globalName, dataID);
+            if (bufferSize == 0)
+            {
+                outDataBuf = new byte[0];
+                return;
+            }
+            IntPtr ptr = Marshal.AllocHGlobal(bufferSize);  // 分配非托管内存‌:ml-citation{ref="3" data="citationList"}
+            try
+            {
+                int readLen = _GetSharedMem(globalName, dataID, ptr, bufferSize);  // 传递指针
+
+                //// 转换为字符串（ANSI编码）
+                //string result = Marshal.PtrToStringAnsi(ptr);
+
+                outDataBuf = new byte[bufferSize];
+                Marshal.Copy(ptr, outDataBuf, 0, bufferSize);//复制数据到byte数组
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);  // 必须释放‌:ml-citation{ref="3" data="citationList"}
+            }            
         }
 
     }

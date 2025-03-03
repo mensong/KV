@@ -14,9 +14,11 @@ void*
 #endif 
 _process_thread(void* arg)
 {
+    const char* pIn = "mensong";
+    int pInLen = strlen(pIn);
     while (1)
     {
-        KV::Ins().SetSharedMem("MyKV", 0, "mensong");
+        KV::Ins().SetSharedMem("MyKV", 0, pIn, pInLen);
         Sleep(1);
     }
 }
@@ -28,11 +30,13 @@ void*
 #endif 
 _process_thread1(void* arg)
 {
+    char* pOut = new char[512];
     while (1)
     {
-        KV::Ins().GetSharedMem("MyKV", 0);
+        KV::Ins().GetSharedMem("MyKV", 0, pOut, 512);
         Sleep(1);
     }
+    delete[] pOut;
 }
 
 int main(int argc, char* argv[])
