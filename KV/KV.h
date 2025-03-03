@@ -4,6 +4,7 @@
 #include <windows.h>
 #endif
 #include <string>
+#include <mutex>
 
 #ifdef KV_EXPORTS
 #define KV_API extern "C" __declspec(dllexport)
@@ -205,6 +206,8 @@ public:
 
 	static KV& Ins()
 	{
+		std::lock_guard<std::mutex> _locker(s_insMutex);
+
 		static KV s_ins;
 		return s_ins;
 	}
@@ -243,7 +246,12 @@ public:
 	}
 
 	HMODULE hDll;
+
+private:
+	static std::mutex s_insMutex;
 };
+
+__declspec(selectany) std::mutex KV::s_insMutex;
 
 #ifdef UNICODE
 #define KVSetStr KV::Ins().SetStrW
