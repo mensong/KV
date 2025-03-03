@@ -650,21 +650,27 @@ KV_API int GetSharedMem(const char* globalName, int dataID, char* outDataBuf, in
 	return itFinder->second.Read(outDataBuf, bufSize, dataID);
 }
 
-KV_API void __cdecl GetSharedMemDataIDs(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb)
+KV_API void __cdecl GetSharedMemDataIDs(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb, void* userData)
 {
-	std::lock_guard<std::mutex> _lock(g_mt_shms);
+	SHM* shm = NULL;
 
-	if (g_shms.find(globalName) == g_shms.end())
-		return;
+	{
+		std::lock_guard<std::mutex> _lock(g_mt_shms);
 
+		if (g_shms.find(globalName) == g_shms.end())
+			return;
+		shm = &g_shms[globalName];
+	}
+	
 	std::vector<int> idxs;
-	g_shms[globalName].ListDataIDs(idxs);
+	shm->ListDataIDs(idxs);
 	if (idxs.empty())
 		return;
 
 	for (size_t i = 0; i < idxs.size(); i++)
 	{
-		cb(idxs[i]);
+		if (!cb(idxs[i], userData))
+			break;
 	}
 }
 

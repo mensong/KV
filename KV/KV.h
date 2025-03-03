@@ -60,8 +60,8 @@ KV_API bool __cdecl SetSharedMem(const char* globalName, int dataID, const char*
 //获得数据。获得数据的长度可传outDataBuf=NULL进去
 KV_API int __cdecl GetSharedMem(const char* globalName, int dataID, char* outDataBuf, int outDataBufSize);
 //获得dataID
-typedef bool(* __cdecl FN_TraverseSharedMemDataIDsCallback)(int dataID);
-KV_API void __cdecl GetSharedMemDataIDs(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb);
+typedef bool(* __cdecl FN_TraverseSharedMemDataIDsCallback)(int dataID, void* userData);
+KV_API void __cdecl GetSharedMemDataIDs(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb, void* userData);
 
 
 #define DEF_PROC(hDll, name) \
@@ -109,7 +109,7 @@ public:
 	typedef bool (__cdecl *FN_InitSharedMem)(const char* globalName, int blockCount, int blockSize);
 	typedef bool(__cdecl *FN_SetSharedMem)(const char* globalName, int dataID, const char* data, int dataSize);
 	typedef int (__cdecl *FN_GetSharedMem)(const char* globalName, int dataID, char* outDataBuf, int outDataBufSize);
-	typedef void (__cdecl* FN_GetSharedMemDataIDs)(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb);
+	typedef void (__cdecl* FN_GetSharedMemDataIDs)(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb, void* userData);
 
 	KV()
 	{

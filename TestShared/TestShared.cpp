@@ -37,10 +37,22 @@ _process_thread1(void* arg)
     delete[] pOut;
 }
 
+bool TraverseSharedMemDataIDsCallback(int dataID, void* userData)
+{
+    int dataLen = KV::Ins().GetSharedMem("MyKV", dataID, NULL, 0);
+    return true;
+}
+
 int main(int argc, char* argv[])
 {
     KV::Ins().InitSharedMem("MyKV", 10000000, 64);
     
+    KV::Ins().SetSharedMem("MyKV", 0, "mensong", 7);
+    KV::Ins().SetSharedMem("MyKV", 1, "mensong1", 8);
+    KV::Ins().SetSharedMem("MyKV", 2, "mensong2", 8);
+    KV::Ins().SetSharedMem("MyKV", 3, "mensong3", 8);
+    KV::Ins().GetSharedMemDataIDs("MyKV", TraverseSharedMemDataIDsCallback, NULL);
+
     for (int i = 0; i < 30; ++i)
     {
         unsigned  uiThreadID = 0;
