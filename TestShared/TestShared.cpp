@@ -14,12 +14,11 @@ void*
 #endif 
 _process_thread(void* arg)
 {
-    const char* pIn = "mensong";
+    const char* pIn = "1121111111111111111111111111111111111";
     int pInLen = strlen(pIn);
     while (1)
     {
         KV::Ins().SetSharedMem("MyKV", 0, pIn, pInLen);
-        Sleep(1);
     }
 }
 
@@ -34,14 +33,13 @@ _process_thread1(void* arg)
     while (1)
     {
         KV::Ins().GetSharedMem("MyKV", 0, pOut, 512);
-        Sleep(1);
     }
     delete[] pOut;
 }
 
 int main(int argc, char* argv[])
 {
-    KV::Ins().InitSharedMem("MyKV", 10000000, 512);
+    KV::Ins().InitSharedMem("MyKV", 10000000, 64);
     
     for (int i = 0; i < 30; ++i)
     {

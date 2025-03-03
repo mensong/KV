@@ -53,13 +53,15 @@ KV_API const char* __cdecl EncryptData(const char* k, const char* v);
 KV_API int __cdecl EncryptDataKeysCount();
 KV_API const char* __cdecl GetEncryptDataKey(int keyIdx);
 
+//初始化：InitSharedMem("name", 10000, 64);
 KV_API bool __cdecl InitSharedMem(const char* globalName, int blockCount, int blockSize);
-KV_API bool __cdecl SetSharedMem(const char* globalName, const char* key, const char* data, int dataSize);
-//获得数据的长度可传outDataBuf=NULL进去
-KV_API int __cdecl GetSharedMem(const char* globalName, const char* key, char* outDataBuf, int outDataBufSize);
-//
-typedef bool(* __cdecl FN_TraverseSharedMemKeysCallback)(const char* key);
-KV_API int __cdecl GetSharedMemKeys(const char* globalName, FN_TraverseSharedMemKeysCallback cb);
+//设置共享内存数据
+KV_API bool __cdecl SetSharedMem(const char* globalName, int dataID, const char* data, int dataSize);
+//获得数据。获得数据的长度可传outDataBuf=NULL进去
+KV_API int __cdecl GetSharedMem(const char* globalName, int dataID, char* outDataBuf, int outDataBufSize);
+//获得dataID
+typedef bool(* __cdecl FN_TraverseSharedMemDataIDsCallback)(int dataID);
+KV_API void __cdecl GetSharedMemDataIDs(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb);
 
 
 #define DEF_PROC(hDll, name) \
@@ -107,7 +109,7 @@ public:
 	typedef bool (__cdecl *FN_InitSharedMem)(const char* globalName, int blockCount, int blockSize);
 	typedef bool(__cdecl *FN_SetSharedMem)(const char* globalName, int dataID, const char* data, int dataSize);
 	typedef int (__cdecl *FN_GetSharedMem)(const char* globalName, int dataID, char* outDataBuf, int outDataBufSize);
-	typedef int (__cdecl* FN_GetSharedMemKeys)(const char* globalName, FN_TraverseSharedMemKeysCallback cb);
+	typedef void (__cdecl* FN_GetSharedMemDataIDs)(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb);
 
 	KV()
 	{
@@ -155,7 +157,7 @@ public:
 			DEF_PROC(__hDll__, InitSharedMem);
 			DEF_PROC(__hDll__, SetSharedMem);
 			DEF_PROC(__hDll__, GetSharedMem);
-            DEF_PROC(__hDll__, GetSharedMemKeys);
+            DEF_PROC(__hDll__, GetSharedMemDataIDs);
 		}
 	}
 		
@@ -199,7 +201,7 @@ public:
 	FN_InitSharedMem  InitSharedMem;
 	FN_SetSharedMem  SetSharedMem;
 	FN_GetSharedMem  GetSharedMem;
-	FN_GetSharedMemKeys GetSharedMemKeys;
+	FN_GetSharedMemDataIDs GetSharedMemDataIDs;
 
 	static KV& Ins()
 	{

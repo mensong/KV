@@ -11,7 +11,7 @@
 #include <..\crt\src\vcruntime\internal_shared.h>
 #include "..\DES_CBC_5\base64.h"
 #include "..\DES_CBC_5\DesHelper.h"
-#include "..\simdb\simdb.hpp"
+#include "..\SHM\shm\SHM.h"
 
 #define REVERT_KEY "KV.DLL"
 #define DES_META "..KV.DLL"//要求8位 
@@ -43,6 +43,9 @@ std::string g_decryptDataDef;
 std::mutex g_mt_encryptData;
 std::string g_encryptData;
 
+std::map<std::string, SHM> g_shms;
+std::mutex g_mt_shms;
+
 std::wstring AnsiToUnicode(const std::string& multiByteStr, UINT codePage = 936)
 {
 	wchar_t* pWideCharStr; //定义返回的宽字符指针
@@ -59,9 +62,6 @@ std::wstring AnsiToUnicode(const std::string& multiByteStr, UINT codePage = 936)
 	HeapFree(GetProcessHeap(), 0, pWideCharStr);
 	return wideByteRet.c_str();
 }
-
-std::map<std::string, simdb> g_shms;
-
 
 //in out 的长度必须为len
 void revertStr(const char* key, int keyLen, const char* in, char* out, int len)
@@ -609,18 +609,14 @@ KV_API bool InitSharedMem(const char* globalName, int blockCount, int blockSize)
 
 	if (g_shms.find(globalName) == g_shms.end())
 	{
-		if (!g_shms[globalName].Init(globalName, blockCount, blockSize))
+		std::wstring wglobalName = AnsiToUnicode(globalName);
+		if (!g_shms[globalName].Init(wglobalName.c_str(), blockCount, blockSize))
 		{
 			g_shms.erase(globalName);
 			return false;
 		}
 	}
 	return true;
-}
-
-KV_API int __cdecl GetSharedMemKeys(const char* globalName, FN_TraverseSharedMemKeysCallback cb)
-{
-	
 }
 
 KV_API bool SetSharedMem(const char* globalName, int dataID, const char* data, int dataSize)
@@ -645,38 +641,30 @@ KV_API int GetSharedMem(const char* globalName, int dataID, char* outDataBuf, in
 
 	if (!outDataBuf || bufSize == 0)
 	{
-		int dataSize = itFinder->second.ReadSize(dataID);
+		int dataSize = itFinder->second.Read(NULL, 0, dataID);
 		if (dataSize <= 0)
 			return 0;
 		return dataSize;
 	}
 
-	return itFinder->second.Read(dataID, outDataBuf, bufSize);
+	return itFinder->second.Read(outDataBuf, bufSize, dataID);
 }
 
-KV_API int __cdecl GetSharedMemDataIDs(const char* globalName, int** outDataIDsList)
+KV_API void __cdecl GetSharedMemDataIDs(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb)
 {
 	std::lock_guard<std::mutex> _lock(g_mt_shms);
 
-    if (g_shms.find(globalName) == g_shms.end())
-        return 0;
+	if (g_shms.find(globalName) == g_shms.end())
+		return;
 
 	std::vector<int> idxs;
 	g_shms[globalName].ListDataIDs(idxs);
 	if (idxs.empty())
-        return 0;
-	*outDataIDsList = (int*)malloc(sizeof(int) * idxs.size());
+		return;
+
 	for (size_t i = 0; i < idxs.size(); i++)
 	{
-		*outDataIDsList[i] = idxs[i];
+		cb(idxs[i]);
 	}
-
-	return idxs.size();
 }
 
-KV_API void __cdecl ReleaseSharedMemBuf(void* buf)
-{
-	if (!buf)
-		return;
-	free(buf);
-}

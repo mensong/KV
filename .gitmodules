@@ -1,3 +1,3 @@
-[submodule "simdb"]
-	path = simdb
-	url = https://github.com/mensong/simdb.git
+[submodule "SHM"]
+	path = SHM
+	url = https://github.com/mensong/SHM.git
