@@ -631,6 +631,17 @@ KV_API bool SetSharedMem(const char* globalName, int dataID, const char* data, i
 		dataID);
 }
 
+KV_API int __cdecl AppendSharedMem(const char* globalName, const char* data, int dataSize)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_shms);
+
+	auto itFinder = g_shms.find(globalName);
+	if (itFinder == g_shms.end())
+		return false;
+	return itFinder->second.AppendWrite(data,
+		(dataSize == 0 ? (int)strlen(data) + 1 : dataSize));
+}
+
 KV_API int GetSharedMem(const char* globalName, int dataID, char* outDataBuf, int bufSize)
 {
 	std::lock_guard<std::mutex> _lock(g_mt_shms);

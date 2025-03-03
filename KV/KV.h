@@ -58,10 +58,12 @@ KV_API const char* __cdecl GetEncryptDataKey(int keyIdx);
 KV_API bool __cdecl InitSharedMem(const char* globalName, int blockCount, int blockSize);
 //设置共享内存数据
 KV_API bool __cdecl SetSharedMem(const char* globalName, int dataID, const char* data, int dataSize);
+//添加数据，返回dataID
+KV_API int __cdecl AppendSharedMem(const char* globalName, const char* data, int dataSize);
 //获得数据。获得数据的长度可传outDataBuf=NULL进去
 KV_API int __cdecl GetSharedMem(const char* globalName, int dataID, char* outDataBuf, int outDataBufSize);
 //获得dataID
-typedef bool(* __cdecl FN_TraverseSharedMemDataIDsCallback)(int dataID, void* userData);
+typedef bool(*__cdecl FN_TraverseSharedMemDataIDsCallback)(int dataID, void* userData);
 KV_API void __cdecl GetSharedMemDataIDs(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb, void* userData);
 
 
@@ -70,47 +72,48 @@ KV_API void __cdecl GetSharedMemDataIDs(const char* globalName, FN_TraverseShare
 class KV
 {
 public:
-	typedef bool(__cdecl *FN_SetStrA)(const char* k, const char* v);
-	typedef bool(__cdecl *FN_SetStrW)(const wchar_t* k, const wchar_t* v);
-	typedef const char* (__cdecl *FN_GetStrA)(const char* k, const char* def);
-	typedef const wchar_t* (__cdecl*FN_GetStrW)(const wchar_t* k, const wchar_t* def);
-	typedef bool(__cdecl *FN_HasStrA)(const char* k);
-	typedef bool(__cdecl *FN_HasStrW)(const wchar_t* k);
-	typedef void(__cdecl *FN_DelStrA)(const char* k);
-	typedef void(__cdecl *FN_DelStrW)(const wchar_t* k);
-	typedef int(__cdecl *FN_StrAKeysCount)();
-	typedef const char* (__cdecl *FN_GetStrAKey)(int keyIdx);
-	typedef int(__cdecl *FN_StrWKeysCount)();
-	typedef const wchar_t* (__cdecl *FN_GetStrWKey)(int keyIdx);
-	typedef bool(__cdecl *FN_SetInt)(const char* k, int v);
-	typedef int(__cdecl *FN_GetInt)(const char* k, int def);
-	typedef bool(__cdecl *FN_HasInt)(const char* k);
-	typedef void(__cdecl *FN_DelInt)(const char* k);
-	typedef int(__cdecl *FN_IntKeysCount)();
-	typedef const char* (__cdecl *FN_GetIntKey)(int keyIdx);
-	typedef bool(__cdecl *FN_SetDouble)(const char* k, double v);
-	typedef double(__cdecl *FN_GetDouble)(const char* k, double def);
-	typedef bool(__cdecl *FN_HasDouble)(const char* k);
-	typedef void(__cdecl *FN_DelDouble)(const char* k);
-	typedef int(__cdecl *FN_DoubleKeysCount)();
-	typedef const char* (__cdecl *FN_GetDoubleKey)(int keyIdx);
-	typedef bool(__cdecl *FN_SetBuff)(const char* k, const char* buff, int buffLen);
-	typedef const char* (__cdecl *FN_GetBuff)(const char* k, int& outLen);
-	typedef bool(__cdecl *FN_HasBuff)(const char* k);
-	typedef void(__cdecl *FN_DelBuff)(const char* k);
-	typedef int(__cdecl *FN_BuffKeysCount)();
-	typedef const char* (__cdecl *FN_GetBuffKey)(int keyIdx);
-	typedef const char* (__cdecl *FN_Encrypt)(const char* data, const char* desKey);
-	typedef const char* (__cdecl *FN_Decrypt)(const char* data, const char* desKey);
-	typedef bool(__cdecl *FN_InitEncryData)(const char* encryFilePath);
-	typedef const char* (__cdecl *FN_GetDecrypt)(const char* k, const char* def);
-	typedef const char* (__cdecl *FN_EncryptData)(const char* k, const char* v);
-	typedef int(__cdecl *FN_EncryptDataKeysCount)();
-	typedef const char* (__cdecl *FN_GetEncryptDataKey)(int keyIdx);
-	typedef bool (__cdecl *FN_InitSharedMem)(const char* globalName, int blockCount, int blockSize);
-	typedef bool(__cdecl *FN_SetSharedMem)(const char* globalName, int dataID, const char* data, int dataSize);
-	typedef int (__cdecl *FN_GetSharedMem)(const char* globalName, int dataID, char* outDataBuf, int outDataBufSize);
-	typedef void (__cdecl* FN_GetSharedMemDataIDs)(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb, void* userData);
+	typedef bool(__cdecl* FN_SetStrA)(const char* k, const char* v);
+	typedef bool(__cdecl* FN_SetStrW)(const wchar_t* k, const wchar_t* v);
+	typedef const char* (__cdecl* FN_GetStrA)(const char* k, const char* def);
+	typedef const wchar_t* (__cdecl* FN_GetStrW)(const wchar_t* k, const wchar_t* def);
+	typedef bool(__cdecl* FN_HasStrA)(const char* k);
+	typedef bool(__cdecl* FN_HasStrW)(const wchar_t* k);
+	typedef void(__cdecl* FN_DelStrA)(const char* k);
+	typedef void(__cdecl* FN_DelStrW)(const wchar_t* k);
+	typedef int(__cdecl* FN_StrAKeysCount)();
+	typedef const char* (__cdecl* FN_GetStrAKey)(int keyIdx);
+	typedef int(__cdecl* FN_StrWKeysCount)();
+	typedef const wchar_t* (__cdecl* FN_GetStrWKey)(int keyIdx);
+	typedef bool(__cdecl* FN_SetInt)(const char* k, int v);
+	typedef int(__cdecl* FN_GetInt)(const char* k, int def);
+	typedef bool(__cdecl* FN_HasInt)(const char* k);
+	typedef void(__cdecl* FN_DelInt)(const char* k);
+	typedef int(__cdecl* FN_IntKeysCount)();
+	typedef const char* (__cdecl* FN_GetIntKey)(int keyIdx);
+	typedef bool(__cdecl* FN_SetDouble)(const char* k, double v);
+	typedef double(__cdecl* FN_GetDouble)(const char* k, double def);
+	typedef bool(__cdecl* FN_HasDouble)(const char* k);
+	typedef void(__cdecl* FN_DelDouble)(const char* k);
+	typedef int(__cdecl* FN_DoubleKeysCount)();
+	typedef const char* (__cdecl* FN_GetDoubleKey)(int keyIdx);
+	typedef bool(__cdecl* FN_SetBuff)(const char* k, const char* buff, int buffLen);
+	typedef const char* (__cdecl* FN_GetBuff)(const char* k, int& outLen);
+	typedef bool(__cdecl* FN_HasBuff)(const char* k);
+	typedef void(__cdecl* FN_DelBuff)(const char* k);
+	typedef int(__cdecl* FN_BuffKeysCount)();
+	typedef const char* (__cdecl* FN_GetBuffKey)(int keyIdx);
+	typedef const char* (__cdecl* FN_Encrypt)(const char* data, const char* desKey);
+	typedef const char* (__cdecl* FN_Decrypt)(const char* data, const char* desKey);
+	typedef bool(__cdecl* FN_InitEncryData)(const char* encryFilePath);
+	typedef const char* (__cdecl* FN_GetDecrypt)(const char* k, const char* def);
+	typedef const char* (__cdecl* FN_EncryptData)(const char* k, const char* v);
+	typedef int(__cdecl* FN_EncryptDataKeysCount)();
+	typedef const char* (__cdecl* FN_GetEncryptDataKey)(int keyIdx);
+	typedef bool(__cdecl* FN_InitSharedMem)(const char* globalName, int blockCount, int blockSize);
+	typedef bool(__cdecl* FN_SetSharedMem)(const char* globalName, int dataID, const char* data, int dataSize);
+	typedef int(__cdecl* FN_AppendSharedMem)(const char* globalName, const char* data, int dataSize);
+	typedef int(__cdecl* FN_GetSharedMem)(const char* globalName, int dataID, char* outDataBuf, int outDataBufSize);
+	typedef void(__cdecl* FN_GetSharedMemDataIDs)(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb, void* userData);
 
 	KV()
 	{
@@ -156,12 +159,13 @@ public:
 			DEF_PROC(__hDll__, EncryptDataKeysCount);
 			DEF_PROC(__hDll__, GetEncryptDataKey);
 			DEF_PROC(__hDll__, InitSharedMem);
-			DEF_PROC(__hDll__, SetSharedMem);
+			DEF_PROC(__hDll__, SetSharedMem); 
+			DEF_PROC(__hDll__, AppendSharedMem);
 			DEF_PROC(__hDll__, GetSharedMem);
-            DEF_PROC(__hDll__, GetSharedMemDataIDs);
+			DEF_PROC(__hDll__, GetSharedMemDataIDs);
 		}
 	}
-		
+
 	FN_SetStrA		 SetStrA;
 	FN_SetStrW		 SetStrW;
 	FN_GetStrA		 GetStrA;
@@ -201,6 +205,7 @@ public:
 	FN_GetEncryptDataKey GetEncryptDataKey;
 	FN_InitSharedMem  InitSharedMem;
 	FN_SetSharedMem  SetSharedMem;
+	FN_AppendSharedMem AppendSharedMem;
 	FN_GetSharedMem  GetSharedMem;
 	FN_GetSharedMemDataIDs GetSharedMemDataIDs;
 
