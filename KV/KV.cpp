@@ -685,3 +685,14 @@ KV_API void __cdecl GetSharedMemDataIDs(const char* globalName, FN_TraverseShare
 	}
 }
 
+KV_API bool __cdecl RemoveSharedMem(const char* globalName, int dataID)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_shms);
+
+	auto itFinder = g_shms.find(globalName);
+	if (itFinder == g_shms.end())
+		return 0;
+
+	return itFinder->second.Remove(dataID);
+}
+
