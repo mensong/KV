@@ -59,7 +59,7 @@ KV_API bool __cdecl InitSharedMem(const char* globalName, int blockCount, int bl
 //设置共享内存数据
 KV_API bool __cdecl SetSharedMem(const char* globalName, int dataID, const char* data, int dataSize);
 //添加数据，返回dataID
-KV_API int __cdecl AppendSharedMem(const char* globalName, const char* data, int dataSize);
+KV_API int __cdecl AppendSharedMem(const char* globalName, const char* data, int dataSize, int startFromDataID);
 //获得数据。获得数据的长度可传outDataBuf=NULL进去
 KV_API int __cdecl GetSharedMem(const char* globalName, int dataID, char* outDataBuf, int outDataBufSize);
 //获得dataID
@@ -111,7 +111,7 @@ public:
 	typedef const char* (__cdecl* FN_GetEncryptDataKey)(int keyIdx);
 	typedef bool(__cdecl* FN_InitSharedMem)(const char* globalName, int blockCount, int blockSize);
 	typedef bool(__cdecl* FN_SetSharedMem)(const char* globalName, int dataID, const char* data, int dataSize);
-	typedef int(__cdecl* FN_AppendSharedMem)(const char* globalName, const char* data, int dataSize);
+	typedef int(__cdecl* FN_AppendSharedMem)(const char* globalName, const char* data, int dataSize, int startFromDataID);
 	typedef int(__cdecl* FN_GetSharedMem)(const char* globalName, int dataID, char* outDataBuf, int outDataBufSize);
 	typedef void(__cdecl* FN_GetSharedMemDataIDs)(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb, void* userData);
 

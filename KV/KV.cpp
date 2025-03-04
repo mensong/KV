@@ -631,7 +631,7 @@ KV_API bool SetSharedMem(const char* globalName, int dataID, const char* data, i
 		dataID);
 }
 
-KV_API int __cdecl AppendSharedMem(const char* globalName, const char* data, int dataSize)
+KV_API int __cdecl AppendSharedMem(const char* globalName, const char* data, int dataSize, int startFromDataID)
 {
 	std::lock_guard<std::mutex> _lock(g_mt_shms);
 
@@ -639,7 +639,7 @@ KV_API int __cdecl AppendSharedMem(const char* globalName, const char* data, int
 	if (itFinder == g_shms.end())
 		return false;
 	return itFinder->second.AppendWrite(data,
-		(dataSize == 0 ? (int)strlen(data) + 1 : dataSize));
+		(dataSize == 0 ? (int)strlen(data) + 1 : dataSize), startFromDataID);
 }
 
 KV_API int GetSharedMem(const char* globalName, int dataID, char* outDataBuf, int bufSize)
