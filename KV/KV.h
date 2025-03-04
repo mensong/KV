@@ -63,7 +63,7 @@ KV_API int __cdecl AppendSharedMem(const char* globalName, const char* data, int
 //获得数据。获得数据的长度可传outDataBuf=NULL进去
 KV_API int __cdecl GetSharedMem(const char* globalName, int dataID, char* outDataBuf, int outDataBufSize);
 //获得dataID
-typedef bool(*__cdecl FN_TraverseSharedMemDataIDsCallback)(int dataID, void* userData);
+typedef bool(__cdecl *FN_TraverseSharedMemDataIDsCallback)(int dataID, void* userData);
 KV_API void __cdecl GetSharedMemDataIDs(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb, void* userData);
 
 
@@ -269,3 +269,5 @@ __declspec(selectany) std::mutex KV::s_insMutex;
 #define KVHasStr KV::Ins().HasStrA
 #define KVDelStr KV::Ins().DelStrA
 #endif
+
+#define kv KV::Ins()

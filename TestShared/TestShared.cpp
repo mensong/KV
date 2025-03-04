@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
     KV::Ins().SetSharedMem("MyKV", 1, "mensong1", 8);
     KV::Ins().SetSharedMem("MyKV", 2, "mensong2", 8);
     KV::Ins().SetSharedMem("MyKV", 3, "mensong3", 8);
-    KV::Ins().AppendSharedMem("MyKV", "mensong3", 8, 10);
+    int n = KV::Ins().AppendSharedMem("MyKV", "mensong3", 8, 10);
     KV::Ins().GetSharedMemDataIDs("MyKV", TraverseSharedMemDataIDsCallback, NULL);
 
     for (int i = 0; i < 30; ++i)
