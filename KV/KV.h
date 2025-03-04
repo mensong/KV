@@ -67,6 +67,8 @@ typedef bool(__cdecl *FN_TraverseSharedMemDataIDsCallback)(int dataID, void* use
 KV_API void __cdecl GetSharedMemDataIDs(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb, void* userData);
 //删除数据
 KV_API bool __cdecl RemoveSharedMem(const char* globalName, int dataID);
+//清空数据
+KV_API void __cdecl ClearSharedMem(const char* globalName);
 
 
 #define DEF_PROC(hDll, name) \
@@ -117,6 +119,7 @@ public:
 	typedef int(__cdecl* FN_GetSharedMem)(const char* globalName, int dataID, char* outDataBuf, int outDataBufSize);
 	typedef void(__cdecl* FN_GetSharedMemDataIDs)(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb, void* userData);
 	typedef bool(__cdecl* FN_RemoveSharedMem)(const char* globalName, int dataID);
+	typedef void(__cdecl* FN_ClearSharedMem)(const char* globalName);
 
 	KV()
 	{
@@ -166,7 +169,8 @@ public:
 			DEF_PROC(__hDll__, AppendSharedMem);
 			DEF_PROC(__hDll__, GetSharedMem);
 			DEF_PROC(__hDll__, GetSharedMemDataIDs); 
-			DEF_PROC(__hDll__, RemoveSharedMem);
+			DEF_PROC(__hDll__, RemoveSharedMem); 
+			DEF_PROC(__hDll__, ClearSharedMem);
 		}
 	}
 
@@ -213,6 +217,8 @@ public:
 	FN_GetSharedMem  GetSharedMem;
 	FN_GetSharedMemDataIDs GetSharedMemDataIDs;
 	FN_RemoveSharedMem RemoveSharedMem;
+	FN_ClearSharedMem ClearSharedMem;
+
 
 	static KV& Ins()
 	{

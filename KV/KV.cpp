@@ -696,3 +696,14 @@ KV_API bool __cdecl RemoveSharedMem(const char* globalName, int dataID)
 	return itFinder->second.Remove(dataID);
 }
 
+KV_API void __cdecl ClearSharedMem(const char* globalName)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_shms);
+
+	auto itFinder = g_shms.find(globalName);
+	if (itFinder == g_shms.end())
+		return;
+
+	itFinder->second.ResetDatas();
+}
+
