@@ -12,6 +12,7 @@
 #include "..\DES_CBC_5\base64.h"
 #include "..\DES_CBC_5\DesHelper.h"
 #include "..\SHM\shm\SHM.h"
+#include "..\SHM\shm\GlobalMutex.h"
 
 #define REVERT_KEY "KV.DLL"
 #define DES_META "..KV.DLL"//ÒªÇó8Î» 
@@ -45,6 +46,9 @@ std::string g_encryptData;
 
 std::map<std::string, SHM> g_shms;
 std::mutex g_mt_shms;
+
+std::map<std::string, GlobalMutex> g_globalMutexs;
+std::mutex g_mt_gm;
 
 std::wstring AnsiToUnicode(const std::string& multiByteStr, UINT codePage = 936)
 {
@@ -705,5 +709,34 @@ KV_API void __cdecl ClearSharedMem(const char* globalName)
 		return;
 
 	itFinder->second.ResetDatas();
+}
+
+KV_API bool __cdecl GlobalMutexLock(const char* globalName)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_gm);
+
+	if (g_globalMutexs.find(globalName) == g_globalMutexs.end())
+	{
+		std::wstring wglobalName = AnsiToUnicode(globalName);
+		if (!g_globalMutexs[globalName].Init(wglobalName.c_str()))
+		{
+			g_globalMutexs.erase(globalName);
+			return false;
+		}
+	}
+
+	return g_globalMutexs[globalName].Lock();
+}
+
+KV_API bool __cdecl GlobalMutexUnlock(const char* globalName)
+{
+	std::lock_guard<std::mutex> _lock(g_mt_gm);
+
+	if (g_globalMutexs.find(globalName) == g_globalMutexs.end())
+	{
+		return false;
+	}
+
+	return g_globalMutexs[globalName].Unlock();
 }
 

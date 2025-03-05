@@ -70,6 +70,8 @@ KV_API bool __cdecl RemoveSharedMem(const char* globalName, int dataID);
 //Çå¿ÕÊý¾Ý
 KV_API void __cdecl ClearSharedMem(const char* globalName);
 
+KV_API bool __cdecl GlobalMutexLock(const char* mutexName);
+KV_API bool __cdecl GlobalMutexUnlock(const char* mutexName);
 
 #define DEF_PROC(hDll, name) \
 	this->name = (FN_##name)::GetProcAddress(hDll, #name)
@@ -120,6 +122,8 @@ public:
 	typedef void(__cdecl* FN_GetSharedMemDataIDs)(const char* globalName, FN_TraverseSharedMemDataIDsCallback cb, void* userData);
 	typedef bool(__cdecl* FN_RemoveSharedMem)(const char* globalName, int dataID);
 	typedef void(__cdecl* FN_ClearSharedMem)(const char* globalName);
+	typedef bool(__cdecl* FN_GlobalMutexLock)(const char* mutexName);
+	typedef bool(__cdecl* FN_GlobalMutexUnlock)(const char* mutexName);
 
 	KV()
 	{
@@ -170,7 +174,9 @@ public:
 			DEF_PROC(__hDll__, GetSharedMem);
 			DEF_PROC(__hDll__, GetSharedMemDataIDs); 
 			DEF_PROC(__hDll__, RemoveSharedMem); 
-			DEF_PROC(__hDll__, ClearSharedMem);
+			DEF_PROC(__hDll__, ClearSharedMem); 
+			DEF_PROC(__hDll__, GlobalMutexLock);
+			DEF_PROC(__hDll__, GlobalMutexUnlock);
 		}
 	}
 
@@ -218,7 +224,8 @@ public:
 	FN_GetSharedMemDataIDs GetSharedMemDataIDs;
 	FN_RemoveSharedMem RemoveSharedMem;
 	FN_ClearSharedMem ClearSharedMem;
-
+	FN_GlobalMutexLock GlobalMutexLock;
+	FN_GlobalMutexUnlock GlobalMutexUnlock;
 
 	static KV& Ins()
 	{
