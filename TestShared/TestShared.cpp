@@ -45,7 +45,12 @@ bool TraverseSharedMemDataIDsCallback(int dataID, void* userData)
 
 int main(int argc, char* argv[])
 {
-    KV::Ins().InitSharedMem("MyKV", 10000000, 64);
+    bool isCreated = false;
+    KV::Ins().InitSharedMem("MyKV", 10000000, 64, &isCreated);
+    if (isCreated)
+        std::cout << "创建了MyKV" << std::endl;
+    else
+        std::cout << "打开了MyKV" << std::endl;
     
     KV::Ins().SetSharedMem("MyKV", 0, "mensong", 7);
     KV::Ins().SetSharedMem("MyKV", 1, "mensong1", 8);

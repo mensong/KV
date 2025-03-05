@@ -603,14 +603,14 @@ KV_API const char* GetBuffKey(int keyIdx)
 	return "";
 }
 
-KV_API bool InitSharedMem(const char* globalName, int blockCount, int blockSize)
+KV_API bool InitSharedMem(const char* globalName, int blockCount, int blockSize, bool* isCreated)
 {
 	std::lock_guard<std::mutex> _lock(g_mt_shms);
 
 	if (g_shms.find(globalName) == g_shms.end())
 	{
 		std::wstring wglobalName = AnsiToUnicode(globalName);
-		if (!g_shms[globalName].Init(wglobalName.c_str(), blockCount, blockSize))
+		if (!g_shms[globalName].Init(wglobalName.c_str(), blockCount, blockSize, isCreated))
 		{
 			g_shms.erase(globalName);
 			return false;
