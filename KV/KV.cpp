@@ -47,7 +47,7 @@ std::string g_encryptData;
 std::map<std::string, SHM> g_shms;
 std::mutex g_mt_shms;
 
-std::map<std::string, GlobalMutex> g_globalMutexs;
+std::map<std::string, GlobalMutex*> g_globalMutexs;
 std::mutex g_mt_gm;
 
 std::wstring AnsiToUnicode(const std::string& multiByteStr, UINT codePage = 936)
@@ -711,32 +711,54 @@ KV_API void __cdecl ClearSharedMem(const char* globalName)
 	itFinder->second.ResetDatas();
 }
 
-KV_API bool __cdecl GlobalMutexLock(const char* globalName)
+KV_API void* __cdecl GlobalMutexInit(const char* mutexName)
 {
 	std::lock_guard<std::mutex> _lock(g_mt_gm);
-
-	if (g_globalMutexs.find(globalName) == g_globalMutexs.end())
+	if (g_globalMutexs.find(mutexName) == g_globalMutexs.end())
 	{
-		std::wstring wglobalName = AnsiToUnicode(globalName);
-		if (!g_globalMutexs[globalName].Init(wglobalName.c_str()))
+		std::wstring wglobalName = AnsiToUnicode(mutexName);
+		g_globalMutexs[mutexName] = new GlobalMutex();
+		if (!g_globalMutexs[mutexName]->Init(wglobalName.c_str()))
 		{
-			g_globalMutexs.erase(globalName);
-			return false;
+			delete g_globalMutexs[mutexName];
+			g_globalMutexs.erase(mutexName);
+			return NULL;
 		}
 	}
-
-	return g_globalMutexs[globalName].Lock();
+	return g_globalMutexs[mutexName];
 }
 
-KV_API bool __cdecl GlobalMutexUnlock(const char* globalName)
+KV_API bool __cdecl GlobalMutexLock(void* hMutex, DWORD waitMS)
 {
-	std::lock_guard<std::mutex> _lock(g_mt_gm);
-
-	if (g_globalMutexs.find(globalName) == g_globalMutexs.end())
-	{
+	if (!hMutex)
 		return false;
-	}
+	GlobalMutex* mutex = (GlobalMutex*)hMutex;
+	if (waitMS == 0)
+		waitMS = INFINITE;
+	return mutex->Lock(waitMS);
+}
 
-	return g_globalMutexs[globalName].Unlock();
+KV_API bool __cdecl GlobalMutexUnlock(void* hMutex)
+{
+	if (!hMutex)
+		return false;
+	GlobalMutex* mutex = (GlobalMutex*)hMutex;
+	return mutex->Unlock();
+}
+
+KV_API void __cdecl GlobalMutexFree(void* hMutex)
+{
+	if (!hMutex)
+		return;
+
+	std::lock_guard<std::mutex> _lock(g_mt_gm);
+	for (auto it = g_globalMutexs.begin(); it != g_globalMutexs.end(); ++it)
+	{
+		if (it->second == hMutex)
+		{
+			g_globalMutexs.erase(it);
+			break;
+		}
+	}
 }
 
